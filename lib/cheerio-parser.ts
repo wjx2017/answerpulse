@@ -139,7 +139,7 @@ export function parseHtml(html: string): ParsedPage {
   const references = $('a[href^="http"]').length;
 
   // Question headings
-  const questionWords = ["what", "how", "why", "when", "where", "who", "which", "is", "are", "do", "does", "can", "should", "如何", "什么", "为什么", "怎么", "是否", "哪些", "怎样", "谁", "哪里", "何时"];
+  const questionWords = ["what", "how", "why", "when", "where", "who", "which", "is", "are", "do", "does", "can", "should", "will", "would", "could", "did"];
   const questionHeadings: string[] = [];
   headings.forEach((h) => {
     const lower = h.text.toLowerCase();

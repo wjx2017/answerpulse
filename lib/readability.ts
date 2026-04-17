@@ -38,10 +38,10 @@ export function interpretFlesch(score: number): {
   color: string;
   desc: string;
 } {
-  if (score >= 80) return { label: "很容易", color: "green", desc: "六年级可理解，非常适合 AI 提取" };
-  if (score >= 70) return { label: "容易", color: "green", desc: "适合广泛阅读" };
-  if (score >= 60) return { label: "标准", color: "green", desc: "13-15 岁可理解，AEO 友好" };
-  if (score >= 50) return { label: "一般", color: "yellow", desc: "稍微复杂，建议简化" };
-  if (score >= 30) return { label: "困难", color: "orange", desc: "大学水平，需要简化" };
-  return { label: "非常困难", color: "red", desc: "建议重写为更简洁的语言" };
+  if (score >= 80) return { label: "Very Easy", color: "green", desc: "Understandable by 6th graders, ideal for AI extraction" };
+  if (score >= 70) return { label: "Easy", color: "green", desc: "Suitable for general reading" };
+  if (score >= 60) return { label: "Standard", color: "green", desc: "Understandable by ages 13-15, AEO-friendly" };
+  if (score >= 50) return { label: "Fairly Difficult", color: "yellow", desc: "Somewhat complex, consider simplifying" };
+  if (score >= 30) return { label: "Difficult", color: "orange", desc: "College level, needs simplification" };
+  return { label: "Very Difficult", color: "red", desc: "Recommend rewriting in simpler language" };
 }

@@ -33,7 +33,7 @@ function analyzeStructuredData(page: ParsedPage): DimensionResult {
   if (page.hasSchema) {
     const types = page.schemaTypes.join(", ");
     score += 60;
-    details.push(`发现 Schema.org 标记: ${types}`);
+    details.push(`Found Schema.org markup: ${types}`);
 
     // Bonus for AEO-relevant schemas
     const aeoRelevant = page.schemaTypes.filter((t) =>
@@ -41,21 +41,21 @@ function analyzeStructuredData(page: ParsedPage): DimensionResult {
     );
     if (aeoRelevant.length > 0) {
       score += 40;
-      details.push(`包含 AEO 相关 Schema: ${aeoRelevant.join(", ")}`);
+      details.push(`AEO-relevant Schema detected: ${aeoRelevant.join(", ")}`);
     }
   } else {
-    details.push("未发现 Schema.org 结构化数据标记");
+    details.push("No Schema.org structured data markup found");
   }
 
   return {
-    name: "结构化数据",
+    name: "Structured Data",
     weight: 20,
     score: Math.min(100, score),
     status: statusFromScore(score),
-    details: details.join("。"),
+    details: details.join(". "),
     recommendation: page.hasSchema
       ? null
-      : "添加 Schema.org 标记，推荐 FAQPage 或 Article Schema，可使用 Google 结构化数据测试工具验证",
+      : "Add Schema.org markup. Recommended: FAQPage or Article Schema. Verify with Google Structured Data Testing Tool.",
   };
 }
 
@@ -65,13 +65,13 @@ function analyzeQaFormat(page: ParsedPage): DimensionResult {
 
   if (qaPairs === 0) {
     return {
-      name: "问答格式",
+      name: "Q&A Format",
       weight: 15,
       score: 0,
       status: "error",
-      details: "未检测到 Q&A 结构",
+      details: "No Q&A structure detected",
       recommendation:
-        '添加问答式内容：使用疑问句作为小标题（如"什么是XX？"），并在下方给出直接回答',
+        'Add Q&A-style content: use interrogative sentences as subheadings (e.g., "What is XX?") and provide direct answers below.',
     };
   }
 
@@ -79,20 +79,20 @@ function analyzeQaFormat(page: ParsedPage): DimensionResult {
   score = Math.min(100, qaPairs * 20);
 
   return {
-    name: "问答格式",
+    name: "Q&A Format",
     weight: 15,
     score,
     status: statusFromScore(score),
-    details: `检测到 ${qaPairs} 个问答式标题`,
+    details: `Detected ${qaPairs} Q&A-style headings`,
     recommendation:
       qaPairs < 3
-        ? "建议至少添加 3-5 个问答式标题，覆盖用户常见问题"
+        ? "Consider adding at least 3-5 Q&A-style headings to cover common user questions."
         : null,
   };
 }
 
 function analyzeAnswerConciseness(page: ParsedPage): DimensionResult {
-  // Look for paragraphs that are 40-60 characters (Chinese) or words (English)
+  // Look for paragraphs that are 40-200 characters — concise, direct answers
   let idealCount = 0;
   let tooLongCount = 0;
   let tooShortCount = 0;
@@ -110,12 +110,12 @@ function analyzeAnswerConciseness(page: ParsedPage): DimensionResult {
 
   if (idealCount === 0 && tooShortCount === 0 && tooLongCount === 0) {
     return {
-      name: "答案简洁度",
+      name: "Answer Conciseness",
       weight: 15,
       score: 0,
       status: "error",
-      details: "页面缺乏段落内容",
-      recommendation: "添加包含直接答案的段落，每段 40-200 字，简洁明确",
+      details: "Page lacks paragraph content",
+      recommendation: "Add paragraphs with direct answers, each 40-200 characters, concise and clear.",
     };
   }
 
@@ -124,15 +124,15 @@ function analyzeAnswerConciseness(page: ParsedPage): DimensionResult {
   if (idealCount >= 3) score += 40;
 
   return {
-    name: "答案简洁度",
+    name: "Answer Conciseness",
     weight: 15,
     score,
     status: statusFromScore(score),
-    details: `${idealCount} 个简洁段落，${tooLongCount} 个过长段落`,
+    details: `${idealCount} concise paragraph(s), ${tooLongCount} overly long paragraph(s)`,
     recommendation:
       idealCount === 0
-        ? "将关键答案精简为 40-200 字的独立段落，放在对应标题下方"
-        : "保持简洁回答风格，避免单段超过 200 字",
+        ? "Distill key answers into standalone paragraphs of 40-200 characters, placed under relevant headings."
+        : "Keep answers concise; avoid single paragraphs exceeding 200 characters.",
   };
 }
 
@@ -143,13 +143,13 @@ function analyzeHeadings(page: ParsedPage): DimensionResult {
   // H1 check
   const h1s = page.headings.filter((h) => h.level === 1);
   if (h1s.length === 0) {
-    details.push("缺少 H1 标题");
+    details.push("Missing H1 heading");
   } else if (h1s.length === 1) {
     score += 30;
     details.push(`H1: ${h1s[0].text}`);
   } else {
     score += 10;
-    details.push(`多个 H1 标题 (${h1s.length}个)，建议只保留一个`);
+    details.push(`Multiple H1 headings (${h1s.length}), recommend keeping only one`);
   }
 
   // Hierarchy
@@ -163,33 +163,33 @@ function analyzeHeadings(page: ParsedPage): DimensionResult {
   }
   if (!hasGaps && levels.length > 0) {
     score += 30;
-    details.push("标题层级清晰");
+    details.push("Heading hierarchy is clear");
   } else if (levels.length > 0) {
     score += 10;
-    details.push("标题层级存在跳跃");
+    details.push("Heading hierarchy has gaps");
   }
 
   // Question words in headings
   if (page.questionHeadings.length > 0) {
     score += 40;
     details.push(
-      `${page.questionHeadings.length} 个标题包含疑问词或问号`
+      `${page.questionHeadings.length} heading(s) contain question words or question marks`
     );
   }
 
   return {
-    name: "标题层级",
+    name: "Heading Structure",
     weight: 10,
     score,
     status: statusFromScore(score),
-    details: details.join("。"),
+    details: details.join(". "),
     recommendation:
       h1s.length === 0
-        ? "添加唯一的 H1 标题，清晰描述页面主题"
+        ? "Add a single H1 heading that clearly describes the page topic."
         : hasGaps
-          ? "完善标题层级：H1 → H2 → H3，避免跳过层级"
+          ? "Fix heading hierarchy: H1 → H2 → H3, avoid skipping levels."
           : page.questionHeadings.length === 0
-            ? "在标题中使用疑问词（如何、什么、为什么）提升 AEO 友好度"
+            ? "Use question words in headings (how, what, why) to improve AEO friendliness."
             : null,
   };
 }
@@ -200,38 +200,38 @@ function analyzeSemanticRichness(page: ParsedPage): DimensionResult {
 
   if (page.lists.length > 0) {
     score += 25;
-    features.push(`${page.lists.length} 个列表`);
+    features.push(`${page.lists.length} list(s)`);
   }
   if (page.tables > 0) {
     score += 30;
-    features.push(`${page.tables} 个表格`);
+    features.push(`${page.tables} table(s)`);
   }
   if (page.images > 0) {
     score += 10;
-    features.push(`${page.images} 张图片`);
+    features.push(`${page.images} image(s)`);
   }
-  // Definition-like patterns (e.g., "XX是..." or "XX refers to...")
+  // Definition-like patterns (e.g., "XX is..." or "XX refers to...")
   const defPattern = page.paragraphs.some(
-    (p) => /^.{1,30}(是|指|称为|refers to|is defined as|means)/.test(p)
+    (p) => /^.{1,30}(是|指|称为|refers to|is defined as|means|is a|are)/.test(p)
   );
   if (defPattern) {
     score += 20;
-    features.push("包含定义性内容");
+    features.push("Contains definitional content");
   }
   if (page.paragraphs.length >= 3) {
     score += 15;
-    features.push(`${page.paragraphs.length} 个段落`);
+    features.push(`${page.paragraphs.length} paragraph(s)`);
   }
 
   return {
-    name: "语义丰富度",
+    name: "Semantic Richness",
     weight: 10,
     score: Math.min(100, score),
     status: statusFromScore(score),
-    details: features.length > 0 ? features.join("，") : "页面结构较单一",
+    details: features.length > 0 ? features.join(", ") : "Page structure is relatively uniform",
     recommendation:
       features.length < 2
-        ? "添加列表、表格、定义等结构化内容，AI 更容易提取这些格式的信息"
+        ? "Add structured content like lists, tables, and definitions — AI finds these formats easier to extract."
         : null,
   };
 }
@@ -242,58 +242,58 @@ function analyzeAuthority(page: ParsedPage): DimensionResult {
 
   if (page.author) {
     score += 35;
-    signals.push(`作者: ${page.author}`);
+    signals.push(`Author: ${page.author}`);
   } else {
-    signals.push("无作者信息");
+    signals.push("No author information");
   }
 
   if (page.publishDate) {
     score += 30;
-    signals.push(`发布日期: ${page.publishDate.substring(0, 10)}`);
+    signals.push(`Published: ${page.publishDate.substring(0, 10)}`);
   } else {
-    signals.push("无发布日期");
+    signals.push("No publish date");
   }
 
   if (page.references >= 2) {
     score += 20;
-    signals.push(`${page.references} 个引用链接`);
+    signals.push(`${page.references} reference link(s)`);
   } else if (page.references === 1) {
     score += 10;
-    signals.push("仅有 1 个引用链接");
+    signals.push("Only 1 reference link");
   } else {
-    signals.push("无引用来源");
+    signals.push("No reference sources");
   }
 
   if (page.canonicalUrl) {
     score += 15;
-    signals.push("有 canonical URL");
+    signals.push("Has canonical URL");
   }
 
   return {
-    name: "权威信号",
+    name: "Authority Signals",
     weight: 10,
     score,
     status: statusFromScore(score),
-    details: signals.join("。"),
+    details: signals.join(". "),
     recommendation: [
-      !page.author && "添加作者信息（meta author 或 schema）",
-      !page.publishDate && "添加发布日期",
-      page.references < 2 && "添加引用来源链接提升可信度",
+      !page.author && "Add author information (meta author or schema)",
+      !page.publishDate && "Add a publish date",
+      page.references < 2 && "Add reference source links to boost credibility",
     ]
       .filter(Boolean)
-      .join("；") || null,
+      .join("; ") || null,
   };
 }
 
 function analyzeReadability(page: ParsedPage): DimensionResult {
   if (!page.bodyText || page.bodyText.length < 50) {
     return {
-      name: "可读性",
+      name: "Readability",
       weight: 10,
       score: 50,
       status: "warning",
-      details: "页面内容不足，无法准确计算可读性",
-      recommendation: "增加更多文字内容（至少 200 字）以便分析",
+      details: "Insufficient page content to accurately calculate readability",
+      recommendation: "Add more text content (at least 200 words) for analysis.",
     };
   }
 
@@ -315,16 +315,16 @@ function analyzeReadability(page: ParsedPage): DimensionResult {
   }
 
   return {
-    name: "可读性",
+    name: "Readability",
     weight: 10,
     score,
     status: statusFromScore(score),
-    details: `Flesch 可读性评分: ${flesch} (${interpretation.label})`,
+    details: `Flesch Reading Ease: ${flesch} (${interpretation.label})`,
     recommendation:
       flesch < 60
-        ? "简化语言：使用短句、常见词汇，目标 Flesch 分数 60-80"
+        ? "Simplify language: use shorter sentences and common words. Target Flesch score 60-80."
         : flesch > 80
-          ? "内容非常简单，可适当增加深度"
+          ? "Content is very simple; consider adding more depth."
           : null,
   };
 }
@@ -335,9 +335,9 @@ function analyzeMobile(page: ParsedPage): DimensionResult {
 
   if (page.hasViewport) {
     score += 60;
-    details.push("有 viewport meta 标签");
+    details.push("Has viewport meta tag");
   } else {
-    details.push("缺少 viewport meta 标签");
+    details.push("Missing viewport meta tag");
   }
 
   // Check for responsive indicators in HTML
@@ -350,29 +350,29 @@ function analyzeMobile(page: ParsedPage): DimensionResult {
       )
     ) {
       score += 20;
-      details.push("检测到响应式 CSS 模式");
+      details.push("Detected responsive CSS patterns");
     }
   }
 
   if (page.hasLang) {
     score += 20;
-    details.push(`语言声明: ${page.lang}`);
+    details.push(`Language declaration: ${page.lang}`);
   } else {
-    details.push("缺少 lang 属性");
+    details.push("Missing lang attribute");
   }
 
   return {
-    name: "移动端适配",
+    name: "Mobile Readiness",
     weight: 10,
     score,
     status: statusFromScore(score),
-    details: details.join("。"),
+    details: details.join(". "),
     recommendation: [
-      !page.hasViewport && "添加 <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">",
-      !page.hasLang && "在 <html> 标签中添加 lang 属性",
+      !page.hasViewport && 'Add <meta name="viewport" content="width=device-width, initial-scale=1">',
+      !page.hasLang && 'Add a lang attribute to the <html> tag',
     ]
       .filter(Boolean)
-      .join("；") || null,
+      .join("; ") || null,
   };
 }
 
@@ -412,7 +412,7 @@ export function analyzeAeo(page: ParsedPage, url: string): AeoReport {
     status: statusFromScore(finalScore),
     isSpa,
     spaNote: isSpa
-      ? "该页面可能需要 JavaScript 渲染，检测基于静态 HTML。建议手动检查动态内容。"
+      ? "This page may require JavaScript rendering. Detection is based on static HTML. Manual review of dynamic content is recommended."
       : null,
     fetchTime: new Date().toISOString(),
     dimensions,
