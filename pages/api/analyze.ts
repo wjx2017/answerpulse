@@ -1,10 +1,68 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { parseHtml } from "@/lib/cheerio-parser";
 import { analyzeAeo } from "@/lib/aeo-analyzer";
-import { checkRateLimit } from "@/lib/rate-limiter";
+import { checkRateLimit, releaseRateLimit } from "@/lib/rate-limiter";
 
 interface AnalyzeBody {
   url: string;
+}
+
+/**
+ * Try fetching a URL with HTTPS first, fall back to HTTP on network failures.
+ */
+async function fetchWithFallback(
+  url: string
+): Promise<{ html: string; finalUrl: string }> {
+  const headers = {
+    "User-Agent":
+      "Mozilla/5.0 (compatible; AnswerPulse/1.0; AEO Scanner; +https://answerpulse.com)",
+    Accept: "text/html,application/xhtml+xml",
+    "Accept-Language": "en-US,en;q=0.9,zh-CN;q=0.8",
+  };
+
+  try {
+    const res = await fetch(url, {
+      headers,
+      signal: AbortSignal.timeout(15000),
+    });
+    const html = await res.text();
+    return { html, finalUrl: url };
+  } catch (err: any) {
+    // Only fall back for network-level failures (timeout, SSL, connection refused)
+    // Do NOT fall back for HTTP errors (4xx, 5xx) - those are real failures
+    const urlObj = new URL(url);
+    const isHttps = urlObj.protocol === "https:";
+
+    if (isHttps) {
+      const isNetworkError =
+        err.name === "TimeoutError" ||
+        err.name === "AbortError" ||
+        err.code === "UND_ERR_CONNECT_TIMEOUT" ||
+        err.code === "DEPTH_ZERO_SELF_SIGNED_CERT" ||
+        err.code === "UNABLE_TO_VERIFY_LEAF_SIGNATURE" ||
+        err.code === "ERR_TLS_CERT_ALTNAME_INVALID" ||
+        err.message?.includes("ECONNREFUSED") ||
+        err.message?.includes("connect ECONNREFUSED") ||
+        err.message?.includes("ENOTFOUND") ||
+        err.message?.includes("certificate");
+
+      if (isNetworkError) {
+        console.log(
+          `[Analyze] HTTPS fetch failed (${err.name || err.code}), trying HTTP fallback for ${urlObj.hostname}`
+        );
+        const httpUrl = `http://${urlObj.hostname}${urlObj.pathname}${urlObj.search}`;
+        const res = await fetch(httpUrl, {
+          headers,
+          signal: AbortSignal.timeout(15000),
+        });
+        const html = await res.text();
+        return { html, finalUrl: httpUrl };
+      }
+    }
+
+    // Re-throw for non-fallback errors
+    throw err;
+  }
 }
 
 export default async function handler(
@@ -29,23 +87,18 @@ export default async function handler(
   }
 
   // Extract client IP from request headers
-  // Priority: x-forwarded-for (Vercel) > x-real-ip (Nginx/Cloudflare) > socket remoteAddress
   const forwardedFor = req.headers["x-forwarded-for"];
   const realIp = req.headers["x-real-ip"];
   const socketIp = req.socket?.remoteAddress;
 
   let ip: string;
   if (typeof forwardedFor === "string" && forwardedFor.length > 0) {
-    // In Vercel, x-forwarded-for contains the client IP as the first entry
-    // Format: "client_ip, proxy1_ip, proxy2_ip"
     ip = forwardedFor.split(",")[0].trim();
   } else if (typeof realIp === "string" && realIp.length > 0) {
     ip = realIp;
   } else if (typeof socketIp === "string" && socketIp.length > 0) {
     ip = socketIp;
   } else {
-    // Fallback: generate a unique ID per request to avoid shared counters
-    // This is safer than using "unknown" which would cause all users to share one counter
     ip = `anon_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
   }
 
@@ -60,37 +113,25 @@ export default async function handler(
       resetAt: rate.resetAt,
     });
   }
+
+  // Lock is held - release on completion
+  let released = false;
+  const cleanup = () => {
+    if (!released) {
+      released = true;
+      releaseRateLimit(ip);
+    }
+  };
+
   res.setHeader("X-RateLimit-Remaining", rate.remaining.toString());
   res.setHeader("X-RateLimit-Limit", "3");
 
-  // Fetch the page
+  // Fetch the page with HTTPS → HTTP fallback
   try {
-    const response = await fetch(url, {
-      headers: {
-        "User-Agent":
-          "Mozilla/5.0 (compatible; AnswerPulse/1.0; AEO Scanner; +https://answerpulse.com)",
-        Accept: "text/html,application/xhtml+xml",
-        "Accept-Language": "en-US,en;q=0.9,zh-CN;q=0.8",
-      },
-      signal: AbortSignal.timeout(15000), // 15s timeout
-    });
-
-    if (!response.ok) {
-      return res.status(400).json({
-        error: `Failed to fetch page: HTTP ${response.status}`,
-      });
-    }
-
-    const contentType = response.headers.get("content-type") || "";
-    if (!contentType.includes("html") && !contentType.includes("text")) {
-      return res.status(400).json({
-        error: "URL does not point to an HTML page",
-      });
-    }
-
-    const html = await response.text();
+    const { html, finalUrl } = await fetchWithFallback(url);
 
     if (html.length < 100) {
+      cleanup();
       return res.status(400).json({
         error: "Page content too short, may be blocked or empty",
       });
@@ -98,13 +139,21 @@ export default async function handler(
 
     // Parse and analyze
     const parsed = parseHtml(html);
-    const report = analyzeAeo(parsed, url);
+    const report = analyzeAeo(parsed, finalUrl);
+    cleanup();
 
     return res.status(200).json({ report });
   } catch (err: any) {
-    if (err.name === "TimeoutError" || err.code === "UND_ERR_CONNECT_TIMEOUT") {
+    cleanup();
+
+    if (err.name === "TimeoutError" || err.name === "AbortError" || err.code === "UND_ERR_CONNECT_TIMEOUT") {
       return res.status(400).json({
         error: "Request timed out. The server may be slow or blocking scrapers.",
+      });
+    }
+    if (err.message?.includes("ECONNREFUSED") || err.message?.includes("ENOTFOUND")) {
+      return res.status(400).json({
+        error: "Unable to connect to the server. Please check the URL and try again.",
       });
     }
     return res.status(500).json({
