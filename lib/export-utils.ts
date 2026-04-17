@@ -20,15 +20,12 @@ export async function exportPdf(report: AeoReport) {
   const exportBarDisplay = exportBar?.style.display;
   if (exportBar) exportBar.style.display = "none";
 
-  // Create a temporary CTA footer for the PDF
-  const footerDiv = document.createElement("div");
-  footerDiv.style.cssText =
-    "background:linear-gradient(90deg,#4f46e5,#7c3aed);color:#fff;text-align:center;padding:16px;border-radius:12px;margin-top:24px;font-size:15px;font-weight:600;";
-  footerDiv.innerHTML =
-    '🔍 <span style="font-weight:400">Scan your own website → </span><a href="https://answerpulse.vercel.app" style="color:#fff;text-decoration:underline;">answerpulse.vercel.app</a>';
+  // Hide "Scan another page" link before screenshot (keep report clean)
+  const scanAnother = document.querySelector('[data-role="scan-another"]') as HTMLElement | null;
+  const scanAnotherDisplay = scanAnother?.style.display;
+  if (scanAnother) scanAnother.style.display = "none";
 
   const contentEl = document.getElementById("report-content");
-  if (contentEl) contentEl.appendChild(footerDiv);
 
   try {
     const canvas = await html2canvas.default(contentEl || document.body, {
@@ -51,8 +48,7 @@ export async function exportPdf(report: AeoReport) {
     // Restore Pro banner
     if (proBanner) proBanner.style.display = originalDisplay ?? "";
     if (exportBar) exportBar.style.display = exportBarDisplay ?? "";
-    // Remove temporary footer
-    if (footerDiv.parentNode) footerDiv.parentNode.removeChild(footerDiv);
+    if (scanAnother) scanAnother.style.display = scanAnotherDisplay ?? "";
   }
 }
 

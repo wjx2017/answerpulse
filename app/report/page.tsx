@@ -170,13 +170,13 @@ function ReportContent() {
         <div data-role="pro-banner"><ProBanner /></div>
 
         {/* Scan another */}
-        <div className="text-center mt-10 mb-6">
+        <div className="text-center mt-10 mb-6" data-role="scan-another">
           <Link
             href="/"
             className="inline-flex items-center gap-2 text-pulse-600 hover:text-pulse-700 font-medium"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
             </svg>
             Scan another page
           </Link>
