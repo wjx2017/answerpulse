@@ -7,7 +7,7 @@ import ScoreGauge from "@/components/ScoreGauge";
 import BreakdownList from "@/components/BreakdownList";
 import ProBanner from "@/components/ProBanner";
 import { AeoReport } from "@/lib/aeo-analyzer";
-import { exportCsv } from "@/lib/export-utils";
+import { exportCsv, exportPdf } from "@/lib/export-utils";
 
 function ReportContent() {
   const searchParams = useSearchParams();
@@ -37,6 +37,18 @@ function ReportContent() {
     } catch (e) {
       console.error("CSV export failed:", e);
       alert("CSV export failed. Please try again.");
+    }
+    setExporting(null);
+  }, [report]);
+
+  const handleExportPdf = useCallback(async () => {
+    if (!report) return;
+    setExporting("pdf");
+    try {
+      await exportPdf(report);
+    } catch (e) {
+      console.error("PDF export failed:", e);
+      alert("PDF export failed. Please try again.");
     }
     setExporting(null);
   }, [report]);
@@ -78,7 +90,15 @@ function ReportContent() {
             </svg>
             AnswerPulse
           </Link>
-          <div className="flex items-center gap-2">
+          <div data-role="export-bar" className="flex items-center gap-2">
+            <button
+              onClick={handleExportPdf}
+              disabled={exporting !== null}
+              className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-gray-700 hover:text-pulse-600 hover:bg-gray-50 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              title="Export as PDF"
+            >
+              📄 PDF
+            </button>
             <button
               onClick={handleExportCsv}
               disabled={exporting !== null}
@@ -87,6 +107,9 @@ function ReportContent() {
             >
               📊 CSV
             </button>
+            {exporting && (
+              <span className="text-xs text-gray-400">Exporting...</span>
+            )}
             <Link
               href="/"
               className="ml-1 px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
@@ -144,7 +167,7 @@ function ReportContent() {
         </div>
 
         {/* Pro Banner */}
-        <ProBanner />
+        <div data-role="pro-banner"><ProBanner /></div>
 
         {/* Scan another */}
         <div className="text-center mt-10 mb-6">
