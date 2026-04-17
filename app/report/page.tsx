@@ -7,7 +7,7 @@ import ScoreGauge from "@/components/ScoreGauge";
 import BreakdownList from "@/components/BreakdownList";
 import ProBanner from "@/components/ProBanner";
 import { AeoReport } from "@/lib/aeo-analyzer";
-import { exportPdf, exportCsv } from "@/lib/export-utils";
+import { exportCsv } from "@/lib/export-utils";
 
 function ReportContent() {
   const searchParams = useSearchParams();
@@ -28,18 +28,6 @@ function ReportContent() {
       setError("No report data found. Please run a scan first.");
     }
   }, [searchParams]);
-
-  const handleExportPdf = useCallback(async () => {
-    if (!report) return;
-    setExporting("pdf");
-    try {
-      await exportPdf(report, "report-content");
-    } catch (e) {
-      console.error("PDF export failed:", e);
-      alert("PDF export failed. Please try again.");
-    }
-    setExporting(null);
-  }, [report]);
 
   const handleExportCsv = useCallback(() => {
     if (!report) return;
@@ -91,15 +79,6 @@ function ReportContent() {
             AnswerPulse
           </Link>
           <div className="flex items-center gap-2">
-            {/* Export Buttons */}
-            <button
-              onClick={handleExportPdf}
-              disabled={exporting !== null}
-              className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-gray-700 hover:text-pulse-600 hover:bg-gray-50 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              title="Export as PDF"
-            >
-              📄 PDF
-            </button>
             <button
               onClick={handleExportCsv}
               disabled={exporting !== null}
