@@ -6,6 +6,7 @@ import Link from "next/link";
 import ScoreGauge from "@/components/ScoreGauge";
 import BreakdownList from "@/components/BreakdownList";
 import ProBanner from "@/components/ProBanner";
+import Header from "@/components/Header";
 import { AeoReport } from "@/lib/aeo-analyzer";
 import { exportCsv, exportPdf } from "@/lib/export-utils";
 
@@ -55,12 +56,15 @@ function ReportContent() {
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center px-4">
-        <div className="text-center">
-          <p className="text-red-500 mb-4">{error}</p>
-          <Link href="/" className="text-pulse-600 hover:underline">
-            ← Back to home
-          </Link>
+      <div className="min-h-screen bg-gray-50">
+        <Header />
+        <div className="pt-24 flex items-center justify-center px-4">
+          <div className="text-center">
+            <p className="text-red-500 mb-4">{error}</p>
+            <Link href="/" className="text-pulse-600 hover:underline">
+              ← Back to home
+            </Link>
+          </div>
         </div>
       </div>
     );
@@ -68,7 +72,7 @@ function ReportContent() {
 
   if (!report) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="animate-pulse text-gray-400">Loading report...</div>
       </div>
     );
@@ -80,9 +84,12 @@ function ReportContent() {
     report.totalScore >= 70 ? "text-green-600" : report.totalScore >= 40 ? "text-yellow-600" : "text-red-600";
 
   return (
-    <main className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="bg-white border-b border-gray-200 px-4 py-4">
+      <Header />
+
+      {/* Report Header */}
+      <header className="bg-white border-b border-gray-200 px-4 py-4 mt-16">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2 text-pulse-600 font-bold hover:text-pulse-700">
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -190,7 +197,7 @@ function ReportContent() {
           <Link href="/privacy" className="hover:text-gray-600">Privacy Policy</Link>
         </div>
       </footer>
-    </main>
+    </div>
   );
 }
 
@@ -198,7 +205,7 @@ export default function ReportPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen flex items-center justify-center">
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
           <div className="animate-pulse text-gray-400">Loading...</div>
         </div>
       }

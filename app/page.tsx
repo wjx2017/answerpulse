@@ -1,11 +1,13 @@
+import Header from "@/components/Header";
 import UrlInput from "@/components/UrlInput";
 import Link from "next/link";
 
 export default function Home() {
   return (
-    <main className="min-h-screen">
+    <div className="min-h-screen">
+      <Header />
       {/* Hero */}
-      <section className="min-h-screen flex flex-col items-center justify-center px-4 py-20 bg-gradient-to-b from-pulse-50/50 to-gray-50">
+      <section className="min-h-screen flex flex-col items-center justify-center px-4 py-20 pt-24 bg-gradient-to-b from-pulse-50/50 to-gray-50">
         <div className="text-center mb-10 max-w-3xl mx-auto">
           <div className="inline-flex items-center gap-2 bg-pulse-100 text-pulse-700 rounded-full px-4 py-1.5 text-sm font-medium mb-6">
             <span className="w-2 h-2 bg-pulse-600 rounded-full animate-pulse" />
@@ -29,7 +31,7 @@ export default function Home() {
             <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
               <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
             </svg>
-            No data stored
+            Secure &amp; private
           </div>
           <div className="flex items-center gap-2">
             <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -127,6 +129,6 @@ export default function Home() {
           </div>
         </div>
       </footer>
-    </main>
+    </div>
   );
 }
