@@ -1,17 +1,19 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useState, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import ScoreGauge from "@/components/ScoreGauge";
 import BreakdownList from "@/components/BreakdownList";
 import ProBanner from "@/components/ProBanner";
 import { AeoReport } from "@/lib/aeo-analyzer";
+import { exportPdf, exportCsv } from "@/lib/export-utils";
 
 function ReportContent() {
   const searchParams = useSearchParams();
   const [report, setReport] = useState<AeoReport | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [exporting, setExporting] = useState<string | null>(null);
 
   useEffect(() => {
     if (!searchParams) return;
@@ -26,6 +28,30 @@ function ReportContent() {
       setError("No report data found. Please run a scan first.");
     }
   }, [searchParams]);
+
+  const handleExportPdf = useCallback(async () => {
+    if (!report) return;
+    setExporting("pdf");
+    try {
+      await exportPdf(report, "report-content");
+    } catch (e) {
+      console.error("PDF export failed:", e);
+      alert("PDF export failed. Please try again.");
+    }
+    setExporting(null);
+  }, [report]);
+
+  const handleExportCsv = useCallback(() => {
+    if (!report) return;
+    setExporting("csv");
+    try {
+      exportCsv(report);
+    } catch (e) {
+      console.error("CSV export failed:", e);
+      alert("CSV export failed. Please try again.");
+    }
+    setExporting(null);
+  }, [report]);
 
   if (error) {
     return (
@@ -64,16 +90,35 @@ function ReportContent() {
             </svg>
             AnswerPulse
           </Link>
-          <Link
-            href="/"
-            className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
-          >
-            New Scan
-          </Link>
+          <div className="flex items-center gap-2">
+            {/* Export Buttons */}
+            <button
+              onClick={handleExportPdf}
+              disabled={exporting !== null}
+              className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-gray-700 hover:text-pulse-600 hover:bg-gray-50 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              title="Export as PDF"
+            >
+              📄 PDF
+            </button>
+            <button
+              onClick={handleExportCsv}
+              disabled={exporting !== null}
+              className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-gray-700 hover:text-pulse-600 hover:bg-gray-50 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              title="Export as CSV"
+            >
+              📊 CSV
+            </button>
+            <Link
+              href="/"
+              className="ml-1 px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+            >
+              New Scan
+            </Link>
+          </div>
         </div>
       </header>
 
-      <div className="max-w-4xl mx-auto px-4 py-10">
+      <div id="report-content" className="max-w-4xl mx-auto px-4 py-10">
         {/* URL */}
         <div className="mb-8">
           <p className="text-sm text-gray-400 mb-1">Scanned URL</p>
