@@ -30,6 +30,17 @@ export interface ParsedPage {
 export function parseHtml(html: string): ParsedPage {
   const $ = cheerio.load(html);
 
+  // Count script tags BEFORE removal (for SPA detection)
+  const scriptCount = $("script").length;
+
+  // Detect SPA framework root markers BEFORE removal
+  const hasSpaRootMarker =
+    $('#__next').length > 0 ||
+    $('#root').length > 0 ||
+    $('#app').length > 0 ||
+    $('div[id^="__nuxt"]').length > 0 ||
+    $('[data-reactroot]').length > 0;
+
   // Remove scripts and styles for text analysis
   $("script, style, noscript").remove();
 
@@ -149,16 +160,6 @@ export function parseHtml(html: string): ParsedPage {
   // Body text (for readability)
   const bodyText = $("body").text().replace(/\s+/g, " ").trim();
 
-  // Count script tags (for SPA detection)
-  const scriptCount = $("script").length;
-
-  // Detect SPA framework root markers
-  const hasSpaRootMarker =
-    $('#__next').length > 0 ||
-    $('#root').length > 0 ||
-    $('#app').length > 0 ||
-    $('div[id^="__nuxt"]').length > 0 ||
-    $('[data-reactroot]').length > 0;
   const hasFavicon = $('link[rel="icon"], link[rel="shortcut icon"]').length > 0;
 
   // Canonical
