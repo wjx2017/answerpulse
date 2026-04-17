@@ -28,27 +28,20 @@ async function fetchWithFallback(
     const html = await res.text();
     return { html, finalUrl: url };
   } catch (err: any) {
-    // Only fall back for network-level failures (timeout, SSL, connection refused)
-    // Do NOT fall back for HTTP errors (4xx, 5xx) - those are real failures
+    // fetch() throws on network-layer failures (TLS, timeout, connection refused).
+    // HTTP 4xx/5xx return a Response with ok === false, NOT an exception.
+    // So any exception from fetch() on HTTPS is a candidate for HTTP fallback.
     const urlObj = new URL(url);
     const isHttps = urlObj.protocol === "https:";
 
     if (isHttps) {
-      const isNetworkError =
-        err.name === "TimeoutError" ||
-        err.name === "AbortError" ||
-        err.code === "UND_ERR_CONNECT_TIMEOUT" ||
-        err.code === "DEPTH_ZERO_SELF_SIGNED_CERT" ||
-        err.code === "UNABLE_TO_VERIFY_LEAF_SIGNATURE" ||
-        err.code === "ERR_TLS_CERT_ALTNAME_INVALID" ||
-        err.message?.includes("ECONNREFUSED") ||
-        err.message?.includes("connect ECONNREFUSED") ||
+      // Known non-recoverable: DNS failure — HTTP won't help either.
+      const isDnsFailure =
         err.message?.includes("ENOTFOUND") ||
-        err.message?.includes("certificate");
-
-      if (isNetworkError) {
+        err.message?.includes("getaddrinfo");
+      if (!isDnsFailure) {
         console.log(
-          `[Analyze] HTTPS fetch failed (${err.name || err.code}), trying HTTP fallback for ${urlObj.hostname}`
+          `[Analyze] HTTPS fetch failed (${err.name || err.code || err.message?.slice(0, 80)}), trying HTTP fallback for ${urlObj.hostname}`
         );
         const httpUrl = `http://${urlObj.hostname}${urlObj.pathname}${urlObj.search}`;
         const res = await fetch(httpUrl, {
@@ -60,7 +53,7 @@ async function fetchWithFallback(
       }
     }
 
-    // Re-throw for non-fallback errors
+    // Re-throw for non-fallback errors (e.g. DNS failure on HTTPS)
     throw err;
   }
 }
