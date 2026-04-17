@@ -397,8 +397,14 @@ export function analyzeAeo(page: ParsedPage, url: string): AeoReport {
   }
   const finalScore = Math.round((totalScore / totalWeight) * 100);
 
-  // Detect potential SPA (very short body text but long HTML)
-  const isSpa = page.bodyText.length < 100 && page.htmlLength > 10000;
+  // Enhanced SPA detection:
+  // 1. Body text is very short (< 500 chars) despite large HTML
+  // 2. Many script tags (>= 5) with little actual content
+  // 3. SPA framework root markers present
+  const isShortBody = page.bodyText.length < 500 && page.htmlLength > 5000;
+  const isScriptHeavy = page.scriptCount >= 5 && page.bodyText.length < 1000;
+  const hasFrameworkMarker = page.hasSpaRootMarker;
+  const isSpa = isShortBody || isScriptHeavy || hasFrameworkMarker;
 
   return {
     url,

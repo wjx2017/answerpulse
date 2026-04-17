@@ -5,7 +5,6 @@ import { checkRateLimit } from "@/lib/rate-limiter";
 
 interface AnalyzeBody {
   url: string;
-  ip: string;
 }
 
 export default async function handler(
@@ -16,7 +15,7 @@ export default async function handler(
     return res.status(405).json({ error: "Method not allowed" });
   }
 
-  const { url, ip } = req.body as AnalyzeBody;
+  const { url } = req.body as AnalyzeBody;
 
   if (!url || typeof url !== "string") {
     return res.status(400).json({ error: "URL is required" });
@@ -29,19 +28,26 @@ export default async function handler(
     return res.status(400).json({ error: "Invalid URL format" });
   }
 
-  // Rate limit check
-  if (ip) {
-    const rate = checkRateLimit(ip);
-    if (!rate.allowed) {
-      return res.status(429).json({
-        error: "Daily limit reached (3 scans/day). Please try again tomorrow.",
-        remaining: 0,
-        resetAt: rate.resetAt,
-      });
-    }
-    // Include remaining in response headers
-    res.setHeader("X-RateLimit-Remaining", rate.remaining.toString());
+  // Extract client IP from request headers
+  const forwardedFor = req.headers["x-forwarded-for"];
+  const realIp = req.headers["x-real-ip"];
+  const ip = (typeof forwardedFor === "string"
+    ? forwardedFor.split(",")[0].trim()
+    : typeof realIp === "string"
+      ? realIp
+      : req.socket?.remoteAddress ?? "unknown") as string;
+
+  // Rate limit check (3 scans/day/IP)
+  const rate = checkRateLimit(ip);
+  if (!rate.allowed) {
+    return res.status(429).json({
+      error: "Daily scan limit reached (3 scans/day). Please try again tomorrow.",
+      remaining: 0,
+      resetAt: rate.resetAt,
+    });
   }
+  res.setHeader("X-RateLimit-Remaining", rate.remaining.toString());
+  res.setHeader("X-RateLimit-Limit", "3");
 
   // Fetch the page
   try {
