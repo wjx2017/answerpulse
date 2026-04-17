@@ -29,13 +29,27 @@ export default async function handler(
   }
 
   // Extract client IP from request headers
+  // Priority: x-forwarded-for (Vercel) > x-real-ip (Nginx/Cloudflare) > socket remoteAddress
   const forwardedFor = req.headers["x-forwarded-for"];
   const realIp = req.headers["x-real-ip"];
-  const ip = (typeof forwardedFor === "string"
-    ? forwardedFor.split(",")[0].trim()
-    : typeof realIp === "string"
-      ? realIp
-      : req.socket?.remoteAddress ?? "unknown") as string;
+  const socketIp = req.socket?.remoteAddress;
+
+  let ip: string;
+  if (typeof forwardedFor === "string" && forwardedFor.length > 0) {
+    // In Vercel, x-forwarded-for contains the client IP as the first entry
+    // Format: "client_ip, proxy1_ip, proxy2_ip"
+    ip = forwardedFor.split(",")[0].trim();
+  } else if (typeof realIp === "string" && realIp.length > 0) {
+    ip = realIp;
+  } else if (typeof socketIp === "string" && socketIp.length > 0) {
+    ip = socketIp;
+  } else {
+    // Fallback: generate a unique ID per request to avoid shared counters
+    // This is safer than using "unknown" which would cause all users to share one counter
+    ip = `anon_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+  }
+
+  console.log(`[AnswerPulse] IP extraction: forwardedFor=${forwardedFor}, realIp=${realIp}, socketIp=${socketIp}, finalIp=${ip}`);
 
   // Rate limit check (3 scans/day/IP)
   const rate = checkRateLimit(ip);

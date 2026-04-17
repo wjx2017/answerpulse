@@ -31,10 +31,13 @@ export function checkRateLimit(ip: string): RateCheckResult {
   if (!entry || now > entry.resetAt) {
     entry = { count: 0, resetAt: now + DAY_MS };
     memoryStore.set(key, entry);
+    console.log(`[RateLimiter] New entry for ip=${ip}, key=${key}`);
   }
 
   const remaining = Math.max(0, DAILY_LIMIT - entry.count);
   const allowed = entry.count < DAILY_LIMIT;
+
+  console.log(`[RateLimiter] ip=${ip}, key=${key}, count=${entry.count}, allowed=${allowed}, storeSize=${memoryStore.size}`);
 
   if (allowed) {
     entry.count += 1;
