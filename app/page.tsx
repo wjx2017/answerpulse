@@ -25,6 +25,16 @@ export default function Home() {
 
         <UrlInput />
 
+        {/* Pricing CTA */}
+        <div className="mt-6">
+          <a
+            href="/pricing"
+            className="inline-flex items-center gap-2 text-sm font-medium text-pulse-600 hover:text-pulse-700 transition-colors"
+          >
+            ⚡ Unlock unlimited scans — see Pro plans
+          </a>
+        </div>
+
         {/* Trust badges */}
         <div className="mt-12 flex flex-wrap items-center justify-center gap-6 text-sm text-gray-400">
           <div className="flex items-center gap-2">
@@ -125,6 +135,7 @@ export default function Home() {
             <span>© {new Date().getFullYear()}</span>
           </div>
           <div className="flex items-center gap-6">
+            <Link href="/pricing" className="hover:text-gray-600 font-medium text-pulse-600">Pricing</Link>
             <Link href="/privacy" className="hover:text-gray-600">Privacy Policy</Link>
           </div>
         </div>

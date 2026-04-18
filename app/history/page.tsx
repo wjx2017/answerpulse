@@ -94,9 +94,19 @@ export default function HistoryPage() {
               {scans.length > 0 && ` (${scans.length} saved)`}
             </p>
           </div>
-          <Link href="/" className="px-4 py-2 text-sm font-medium text-pulse-600 hover:text-pulse-700">
-            ← New Scan
-          </Link>
+          <div className="flex items-center gap-3">
+            {profile?.plan !== "pro" && (
+              <Link
+                href="/pricing"
+                className="px-4 py-2 text-sm font-semibold text-pulse-700 bg-pulse-50 hover:bg-pulse-100 rounded-lg transition-colors"
+              >
+                ⚡ Upgrade to Pro
+              </Link>
+            )}
+            <Link href="/" className="px-4 py-2 text-sm font-medium text-pulse-600 hover:text-pulse-700">
+              ← New Scan
+            </Link>
+          </div>
         </div>
 
         {loading ? (
@@ -114,6 +124,13 @@ export default function HistoryPage() {
             <Link href="/" className="text-pulse-600 hover:text-pulse-700 font-medium">
               Run your first scan →
             </Link>
+            {profile?.plan !== "pro" && (
+              <p className="mt-4">
+                <Link href="/pricing" className="text-sm text-pulse-500 hover:text-pulse-700">
+                  Upgrade to Pro for unlimited scans & full history →
+                </Link>
+              </p>
+            )}
           </div>
         ) : (
           <div className="space-y-3">

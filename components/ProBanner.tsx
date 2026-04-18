@@ -71,7 +71,7 @@ export default function ProBanner() {
             </>
           )}
         </div>
-        <p className="text-pulse-200 text-sm mt-4">$9/month · Cancel anytime</p>
+        <p className="text-pulse-200 text-sm mt-4">$9/month via PayPal · Pay securely, upgrade instantly after payment confirmation</p>
       </div>
     </div>
   );

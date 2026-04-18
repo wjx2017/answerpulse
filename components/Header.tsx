@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useAuth } from "@/lib/use-auth";
+import UpgradeButton from "@/components/UpgradeButton";
 
 export default function Header() {
   const { user, profile, loading, signOut } = useAuth();
@@ -27,6 +28,14 @@ export default function Header() {
               >
                 History
               </Link>
+              {profile?.plan !== "pro" && (
+                <Link
+                  href="/pricing"
+                  className="px-3 py-1.5 text-sm font-semibold text-pulse-700 bg-pulse-50 hover:bg-pulse-100 rounded-lg transition-colors"
+                >
+                  ⚡ Upgrade
+                </Link>
+              )}
               <div className="flex items-center gap-2">
                 <span className="text-sm text-gray-500">
                   {profile?.plan === "pro" ? (
@@ -47,6 +56,12 @@ export default function Header() {
             </>
           ) : (
             <>
+              <Link
+                href="/pricing"
+                className="px-3 py-1.5 text-sm font-medium text-pulse-600 hover:text-pulse-700 transition-colors"
+              >
+                Pricing
+              </Link>
               <Link
                 href="/login"
                 className="px-3 py-1.5 text-sm font-medium text-gray-600 hover:text-pulse-600 transition-colors"
