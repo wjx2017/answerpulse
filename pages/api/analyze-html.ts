@@ -40,15 +40,36 @@ export default async function handler(
     // Authenticated: check user scan limit
     const { data: profile } = await supabase
       .from("profiles")
-      .select("id, plan, scans_used, scans_reset_at")
+      .select("id, plan, scans_used, scans_reset_at, pro_expires_at")
       .eq("id", user.id)
-      .single();
+      .single() as { data: { id: string; plan: string; scans_used: number; scans_reset_at: string; pro_expires_at: string | null } | null; error: any };
 
     const now = new Date();
     let scansUsed = profile?.scans_used ?? 0;
     let resetAt = profile?.scans_reset_at ? new Date(profile.scans_reset_at) : now;
 
-    if (now >= resetAt) {
+    // Check if Pro has expired — downgrade to free if past pro_expires_at
+    const proExpiresAt = profile?.pro_expires_at ? new Date(profile.pro_expires_at) : null;
+    let plan = profile?.plan ?? "free";
+
+    if (plan === "pro" && proExpiresAt && now >= proExpiresAt) {
+      // Pro has expired — downgrade to free
+      plan = "free";
+      scansUsed = 0;
+      resetAt = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+      await supabase
+        .from("profiles")
+        .update({
+          plan: "free",
+          scans_used: 0,
+          scans_reset_at: resetAt.toISOString(),
+        })
+        .eq("id", user.id);
+      console.log(`[AnalyzeHTML] Pro expired for user ${user.id}, downgraded to free`);
+    }
+
+    // Reset monthly count for free users if past reset time
+    if (plan === "free" && now >= resetAt) {
       scansUsed = 0;
       resetAt = new Date(now.getFullYear(), now.getMonth() + 1, 1);
       await supabase
@@ -57,7 +78,6 @@ export default async function handler(
         .eq("id", user.id);
     }
 
-    const plan = profile?.plan ?? "free";
     const freeLimit = 5;
 
     if (plan === "free" && scansUsed >= freeLimit) {

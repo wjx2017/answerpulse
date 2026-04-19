@@ -1,6 +1,8 @@
 import Header from "@/components/Header";
 import UpgradeButton from "@/components/UpgradeButton";
+import PayPalButton from "@/components/PayPalButton";
 import Link from "next/link";
+import { PRO_PRICE, PRO_PRICE_LABEL } from "@/lib/config";
 
 export default function PricingPage() {
   return (
@@ -10,7 +12,7 @@ export default function PricingPage() {
         <div className="max-w-4xl mx-auto text-center mb-12">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">Simple, Transparent Pricing</h1>
           <p className="text-lg text-gray-500 max-w-2xl mx-auto">
-            Start free with 5 scans/month. Upgrade to Pro for unlimited power.
+            Start free with 5 scans per month. Get Pro for unlimited power — one-time payment, 30 days access.
           </p>
         </div>
 
@@ -51,10 +53,9 @@ export default function PricingPage() {
             </div>
             <div className="text-sm font-semibold text-pulse-600 uppercase tracking-wide mb-2">Pro</div>
             <div className="flex items-baseline gap-1 mb-1">
-              <span className="text-4xl font-bold text-gray-900">$9</span>
-              <span className="text-gray-400">/month</span>
+              <span className="text-4xl font-bold text-gray-900">${PRO_PRICE}</span>
             </div>
-            <p className="text-gray-400 text-sm mb-6">Paid securely via PayPal</p>
+            <p className="text-gray-400 text-sm mb-6">one-time payment • 30 days access</p>
             <ul className="space-y-3 text-left mb-8">
               {[
                 "Unlimited scans",
@@ -64,7 +65,7 @@ export default function PricingPage() {
                 "Batch scanning",
                 "Engine simulation preview",
                 "Priority support",
-                "Cancel anytime",
+                "No auto-renewal",
               ].map((f) => (
                 <li key={f} className="flex items-start gap-2 text-sm text-gray-600">
                   <svg className="w-5 h-5 text-green-500 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
@@ -74,9 +75,13 @@ export default function PricingPage() {
                 </li>
               ))}
             </ul>
-            <UpgradeButton className="w-full justify-center" />
+            <PayPalButton className="mb-3" />
+            {/* Fallback: direct PayPal link (no auto-upgrade) */}
+            <div className="text-center">
+              <UpgradeButton className="text-sm" />
+            </div>
             <p className="text-xs text-gray-400 mt-3 text-center">
-              PayPal payment · Pro activated after payment confirmation
+              One-time payment · No auto-renewal · Renew manually after 30 days
             </p>
           </div>
         </div>
@@ -87,20 +92,36 @@ export default function PricingPage() {
           <div className="space-y-4">
             {[
               {
-                q: "How does PayPal payment work?",
-                a: "Click the Upgrade button to go to PayPal's secure checkout. After your payment is confirmed, your Pro plan will be activated manually within 24 hours. You'll receive a confirmation email.",
+                q: "How long does Pro last?",
+                a: "Pro access is valid for 30 days from the date of purchase.",
               },
               {
-                q: "Can I cancel anytime?",
-                a: "Yes. Contact us to cancel your subscription. Your Pro access will continue until the end of your current billing period.",
+                q: "Will I be charged automatically?",
+                a: "No. AnswerPulse Pro is a one-time payment with no auto-renewal. You choose when to renew.",
+              },
+              {
+                q: "How do I renew my Pro access?",
+                a: "After your 30-day access expires, you can manually purchase Pro again at any time from the Pricing page.",
+              },
+              {
+                q: "What happens when my Pro expires?",
+                a: "Your account returns to the Free plan. You can continue using free features, or renew Pro whenever you're ready.",
+              },
+              {
+                q: "How does PayPal payment work?",
+                a: "Click the PayPal button below the Pro plan to check out securely. After payment is confirmed, your Pro plan is activated instantly — no waiting, no manual steps.",
               },
               {
                 q: "What happens after I pay?",
-                a: "Once we confirm your PayPal payment, we'll upgrade your account to Pro. You'll get unlimited scans, full history, and all Pro features immediately.",
+                a: "Your Pro access is activated instantly after payment confirmation. You'll get unlimited scans, full history, and all Pro features immediately. If anything goes wrong, contact support.",
+              },
+              {
+                q: "Is there a refund policy?",
+                a: "Refunds can be requested within 7 days of purchase. If you have used Pro features more than 5 times, refunds are not supported. Contact support@answerpulse.com for assistance.",
               },
               {
                 q: "Is there a free trial?",
-                a: "The free plan includes 5 scans/month — no trial needed. Use it to see the value before upgrading.",
+                a: "The free plan includes 5 scans per month — no trial needed. Use it to see the value before upgrading.",
               },
             ].map((faq) => (
               <details key={faq.q} className="group bg-white rounded-xl border border-gray-200 p-5">

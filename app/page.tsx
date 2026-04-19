@@ -1,5 +1,6 @@
 import Header from "@/components/Header";
 import UrlInput from "@/components/UrlInput";
+import ScanAreaCta from "@/components/ScanAreaCta";
 import Link from "next/link";
 
 export default function Home() {
@@ -25,15 +26,8 @@ export default function Home() {
 
         <UrlInput />
 
-        {/* Pricing CTA */}
-        <div className="mt-6">
-          <a
-            href="/pricing"
-            className="inline-flex items-center gap-2 text-sm font-medium text-pulse-600 hover:text-pulse-700 transition-colors"
-          >
-            ⚡ Unlock unlimited scans — see Pro plans
-          </a>
-        </div>
+        {/* Pricing CTA — plan-aware */}
+        <ScanAreaCta />
 
         {/* Trust badges */}
         <div className="mt-12 flex flex-wrap items-center justify-center gap-6 text-sm text-gray-400">

@@ -3,11 +3,15 @@
 import Link from "next/link";
 import { useAuth } from "@/lib/use-auth";
 import UpgradeButton from "@/components/UpgradeButton";
+import { PRO_PRICE_DISPLAY, isProActive } from "@/lib/config";
 
 export default function ProBanner() {
   const { user, profile } = useAuth();
 
-  if (profile?.plan === "pro") {
+  if (isProActive(profile)) {
+    const expiryDate = profile?.pro_expires_at ? new Date(profile.pro_expires_at) : null;
+    const daysLeft = expiryDate ? Math.max(0, Math.ceil((expiryDate.getTime() - Date.now()) / (24 * 60 * 60 * 1000))) : null;
+
     return (
       <div className="bg-gradient-to-r from-amber-500 to-orange-500 rounded-2xl p-6 text-white shadow-xl">
         <div className="flex items-center gap-3">
@@ -17,6 +21,14 @@ export default function ProBanner() {
           <span className="font-semibold">Pro Plan Active</span>
           <span className="text-sm text-white/80">Unlimited scans · Full history</span>
         </div>
+        {expiryDate && (
+          <div className="mt-2 text-sm text-white/90">
+            Pro active until {expiryDate.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
+            {daysLeft !== null && daysLeft > 0 && (
+              <span className="ml-2 opacity-75">({daysLeft} days remaining)</span>
+            )}
+          </div>
+        )}
       </div>
     );
   }
@@ -71,7 +83,7 @@ export default function ProBanner() {
             </>
           )}
         </div>
-        <p className="text-pulse-200 text-sm mt-4">$9/month via PayPal · Pay securely, upgrade instantly after payment confirmation</p>
+        <p className="text-pulse-200 text-sm mt-4">{PRO_PRICE_DISPLAY} one-time · 30 days access · No auto-renewal</p>
       </div>
     </div>
   );

@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useAuth } from "@/lib/use-auth";
+import { isProActive } from "@/lib/config";
 import Link from "next/link";
 import Header from "@/components/Header";
 
@@ -35,7 +36,7 @@ export default function HistoryPage() {
     setLoading(true);
     setError(null);
     const supabase = createClient();
-    const limit = profile?.plan === "pro" ? 100 : 10;
+    const limit = isProActive(profile) ? 100 : 10;
 
     const { data, error } = await supabase
       .from("scan_history")
@@ -90,12 +91,12 @@ export default function HistoryPage() {
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Scan History</h1>
             <p className="text-sm text-gray-500 mt-1">
-              {profile?.plan === "pro" ? "Pro plan — unlimited history" : `Free plan — last 10 scans`}
+              {isProActive(profile) ? "Pro plan — unlimited history" : `Free plan — last 10 scans`}
               {scans.length > 0 && ` (${scans.length} saved)`}
             </p>
           </div>
           <div className="flex items-center gap-3">
-            {profile?.plan !== "pro" && (
+            {!isProActive(profile) && (
               <Link
                 href="/pricing"
                 className="px-4 py-2 text-sm font-semibold text-pulse-700 bg-pulse-50 hover:bg-pulse-100 rounded-lg transition-colors"
@@ -124,7 +125,7 @@ export default function HistoryPage() {
             <Link href="/" className="text-pulse-600 hover:text-pulse-700 font-medium">
               Run your first scan →
             </Link>
-            {profile?.plan !== "pro" && (
+            {!isProActive(profile) && (
               <p className="mt-4">
                 <Link href="/pricing" className="text-sm text-pulse-500 hover:text-pulse-700">
                   Upgrade to Pro for unlimited scans & full history →

@@ -4,13 +4,13 @@ import crypto from "crypto";
 
 /**
  * Lemon Squeezy webhook handler.
- * Handles subscription_created, subscription_updated, subscription_cancelled events.
+ * Handles Pro purchase events from Lemon Squeezy.
  *
  * Events:
- * - subscription_created: New Pro subscription → set plan = 'pro'
- * - subscription_updated: Plan change / renewal
- * - subscription_cancelled: Subscription cancelled → set plan = 'free'
- * - subscription_expired: Subscription expired → set plan = 'free'
+ * - order_created / subscription_created: New Pro purchase → set plan = 'pro'
+ * - subscription_updated: Plan change
+ * - subscription_cancelled: Cancelled → set plan = 'free'
+ * - subscription_expired: Expired → set plan = 'free'
  */
 
 export default async function handler(
@@ -71,25 +71,28 @@ export default async function handler(
     switch (eventName) {
       case "subscription_created":
       case "subscription_resumed":
-        // Upgrade to Pro
+        // Upgrade to Pro (30 days from now)
+        const proExpiresAtNew = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
         await supabase
           .from("profiles")
           .update({
             plan: "pro",
             scans_used: 0,
-            scans_reset_at: new Date().toISOString(),
+            scans_reset_at: proExpiresAtNew.toISOString(),
+            pro_expires_at: proExpiresAtNew.toISOString(),
           })
           .eq("id", userId);
-        console.log(`[LemonSqueezy] User ${userId} upgraded to Pro`);
+        console.log(`[LemonSqueezy] User ${userId} upgraded to Pro, expires ${proExpiresAtNew.toISOString()}`);
         break;
 
       case "subscription_updated":
         // Check if renewal or downgrade
         const status = body.data?.attributes?.status;
         if (status === "active" || status === "past_due") {
+          const renewedAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
           await supabase
             .from("profiles")
-            .update({ plan: "pro" })
+            .update({ plan: "pro", pro_expires_at: renewedAt.toISOString() })
             .eq("id", userId);
         }
         break;
@@ -111,12 +114,12 @@ export default async function handler(
         break;
 
       case "subscription_expired":
-        // Subscription has fully expired
+        // Purchase has fully expired
         await supabase
           .from("profiles")
           .update({ plan: "free" })
           .eq("id", userId);
-        console.log(`[LemonSqueezy] User ${userId} subscription expired, downgraded to Free`);
+        console.log(`[LemonSqueezy] User ${userId} Pro expired, downgraded to Free`);
         break;
 
       default:

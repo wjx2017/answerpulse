@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useAuth } from "@/lib/use-auth";
+import { isProActive } from "@/lib/config";
 import UpgradeButton from "@/components/UpgradeButton";
 
 export default function Header() {
@@ -28,7 +29,7 @@ export default function Header() {
               >
                 History
               </Link>
-              {profile?.plan !== "pro" && (
+              {!isProActive(profile) && (
                 <Link
                   href="/pricing"
                   className="px-3 py-1.5 text-sm font-semibold text-pulse-700 bg-pulse-50 hover:bg-pulse-100 rounded-lg transition-colors"
@@ -37,9 +38,15 @@ export default function Header() {
                 </Link>
               )}
               <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-500">
-                  {profile?.plan === "pro" ? (
-                    <span className="px-2 py-0.5 bg-amber-100 text-amber-700 rounded-full text-xs font-semibold">PRO</span>
+                <span className="text-sm text-gray-500 truncate max-w-[160px]" title={profile?.full_name || user?.email || ""}>
+                  {profile?.full_name || user?.email || "User"}
+                </span>
+                <span className="text-sm text-gray-400">
+                  {isProActive(profile) ? (
+                    <span className="px-2 py-0.5 bg-amber-100 text-amber-700 rounded-full text-xs font-semibold"
+                      title={profile?.pro_expires_at ? `Pro expires ${new Date(profile.pro_expires_at).toLocaleDateString()}` : undefined}>
+                      PRO
+                    </span>
                   ) : (
                     <span className="text-xs">
                       {profile?.scans_used ?? 0}/5 scans

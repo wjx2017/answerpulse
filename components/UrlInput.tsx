@@ -2,14 +2,18 @@
 
 import { useState, useRef, FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/lib/use-auth";
+import { isProActive } from "@/lib/config";
 
 type InputMode = "url" | "html";
 
 export default function UrlInput() {
+  const { profile, loading: authLoading } = useAuth();
+  const isPro = isProActive(profile);
   const [mode, setMode] = useState<InputMode>("url");
   const [url, setUrl] = useState("");
   const [html, setHtml] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [scanLoading, setScanLoading] = useState(false);
   const [error, setError] = useState("");
   const isProcessingRef = useRef(false); // P0 fix: synchronous guard against concurrent submits
   const router = useRouter();
@@ -24,7 +28,7 @@ export default function UrlInput() {
       return;
     }
     isProcessingRef.current = true;
-    setLoading(true);
+    setScanLoading(true);
 
     try {
       let endpoint: string;
@@ -72,7 +76,7 @@ export default function UrlInput() {
     } catch {
       setError("Network error. Please try again.");
     } finally {
-      setLoading(false);
+      setScanLoading(false);
       isProcessingRef.current = false;
     }
   };
@@ -115,7 +119,7 @@ export default function UrlInput() {
               onChange={(e) => setUrl(e.target.value)}
               placeholder="Enter URL to scan (e.g., https://example.com/blog/faq)"
               className="w-full px-5 py-4 focus:outline-none text-lg pr-12"
-              disabled={loading}
+              disabled={scanLoading}
             />
             <svg
               className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"
@@ -138,7 +142,7 @@ export default function UrlInput() {
             placeholder="Paste your HTML source code here..."
             rows={8}
             className="w-full px-5 py-4 focus:outline-none text-sm font-mono resize-y"
-            disabled={loading}
+            disabled={scanLoading}
           />
         )}
 
@@ -146,10 +150,10 @@ export default function UrlInput() {
         <div className="border-t border-gray-100 px-4 py-3 bg-gray-50/50 flex justify-end">
           <button
             type="submit"
-            disabled={loading || (mode === "url" ? !url.trim() : !html.trim())}
+            disabled={scanLoading || (mode === "url" ? !url.trim() : !html.trim())}
             className="px-8 py-3 bg-pulse-600 hover:bg-pulse-700 disabled:bg-gray-300 text-white font-semibold rounded-xl transition-colors shadow-lg shadow-pulse-600/25 min-w-[140px] flex items-center justify-center gap-2"
           >
-            {loading ? (
+            {scanLoading ? (
               <>
                 <svg className="animate-spin w-5 h-5" viewBox="0 0 24 24" fill="none">
                   <circle
@@ -196,7 +200,17 @@ export default function UrlInput() {
         <a href="/privacy" className="underline hover:text-gray-600">
           Privacy Policy
         </a>
-        . 3 scans/day for free users.
+        {!authLoading && (
+          <>
+            {isPro ? (
+              " · Pro: Unlimited scans ✨"
+            ) : profile ? (
+              ` · ${profile.scans_used}/5 scans this month`
+            ) : (
+              ". Free: 3 scans/day."
+            )}
+          </>
+        )}
       </p>
     </form>
   );

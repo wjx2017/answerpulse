@@ -5,9 +5,11 @@ import type { User } from "@supabase/supabase-js";
 export interface UserProfile {
   id: string;
   email: string | null;
+  full_name: string | null;
   plan: "free" | "pro";
   scans_used: number;
   scans_reset_at: string;
+  pro_expires_at: string | null;
 }
 
 export function useAuth() {
@@ -41,14 +43,23 @@ export function useAuth() {
       }
     });
 
-    return () => subscription.unsubscribe();
+    // Listen for cross-component profile refresh events (e.g. after PayPal payment)
+    const onRefresh = () => {
+      if (user) fetchProfile(supabase, user.id);
+    };
+    window.addEventListener("answerpulse:profile-refresh", onRefresh);
+
+    return () => {
+      subscription.unsubscribe();
+      window.removeEventListener("answerpulse:profile-refresh", onRefresh);
+    };
   }, []);
 
   const fetchProfile = async (supabase: ReturnType<typeof createClient>, userId: string) => {
     try {
       const { data, error } = await supabase
         .from("profiles")
-        .select("id, email, plan, scans_used, scans_reset_at")
+        .select("id, email, full_name, plan, scans_used, scans_reset_at, pro_expires_at")
         .eq("id", userId)
         .single();
       if (data && !error) {

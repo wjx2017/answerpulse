@@ -151,9 +151,9 @@ export default async function handler(
     }
   }
 
-  // ── Step 3: Upgrade user to Pro ──
+  // ── Step 3: Upgrade user to Pro (30 days from now) ──
   const now = new Date();
-  const resetAt = new Date(now.getFullYear(), now.getMonth() + 1, 1).toISOString();
+  const proExpiresAt = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
 
   try {
     const { error: updateError } = await supabase
@@ -161,7 +161,8 @@ export default async function handler(
       .update({
         plan: "pro",
         scans_used: 0,
-        scans_reset_at: resetAt,
+        scans_reset_at: proExpiresAt.toISOString(),
+        pro_expires_at: proExpiresAt.toISOString(),
       })
       .eq("id", user.id);
 
@@ -184,6 +185,7 @@ export default async function handler(
   return res.status(200).json({
     success: true,
     plan: "pro",
-    scansResetAt: resetAt,
+    scansResetAt: proExpiresAt.toISOString(),
+    proExpiresAt: proExpiresAt.toISOString(),
   });
 }

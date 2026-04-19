@@ -1,5 +1,8 @@
 # PayPal 手动收费版 — 完整操作手册
 
+> **⚠️ 注意**: 从 v0.2.0 起，推荐使用 [PayPal 动态下单版](./paypal-dynamic-checkout.md)，支持支付后自动激活 Pro。
+> 本文档保留作为降级方案参考。
+>
 > **适用版本**: AnswerPulse v0.1.0+ (PayPal 手动收费模式)
 > **最后更新**: 2026-04-18
 
@@ -36,16 +39,29 @@
 NEXT_PUBLIC_PAYPAL_PAYMENT_LINK=https://www.paypal.com/your-payment-link-here
 ```
 
-### 2.2 未配置时的行为
+### 2.2 Pro 价格展示配置（与 PayPal 金额保持一致）
+
+站内展示价格由以下两个环境变量控制，**必须与 PayPal 订阅金额保持一致**，避免用户困惑或争议：
+
+```env
+NEXT_PUBLIC_PRO_PRICE=9
+NEXT_PUBLIC_PRO_PRICE_LABEL=/month
+```
+
+默认显示为 `$9/month`。如需改为 `$12/month` 或其他金额，修改这两个变量即可，全站所有位置（Upgrade 按钮、Pricing 页面、Pro Banner）自动同步更新。
+
+> ⚠️ 修改后请同时更新 PayPal 后台的订阅金额，确保站内展示与实际扣费一致。
+
+### 2.3 未配置时的行为
 
 如果 `NEXT_PUBLIC_PAYPAL_PAYMENT_LINK` 为空、为 `#` 或未设置，Upgrade 按钮会显示为 **"Upgrade Coming Soon"** 的禁用状态（灰色、不可点击），不会误导用户点击无效链接。
 
-### 2.3 如何创建 PayPal 付款链接
+### 2.4 如何创建 PayPal 付款链接
 
 1. 登录 [PayPal 商家中心](https://www.paypal.com/businessmanage)
 2. 进入 **Pay & Get Paid → PayPal Buttons**
 3. 选择 **Subscribe**（订阅）或 **Buy Now**（一次性付款）
-   - 建议使用 **Subscribe**，设置月付 $9
+   - 建议使用 **Subscribe**，金额需与 `NEXT_PUBLIC_PRO_PRICE` 保持一致（默认 $9）
 4. 配置金额、货币、周期等
 5. 生成后，找到 **Shareable link** 或 **Email link**，复制完整 URL
 6. 将 URL 填入 `NEXT_PUBLIC_PAYPAL_PAYMENT_LINK`
@@ -60,7 +76,7 @@ NEXT_PUBLIC_PAYPAL_PAYMENT_LINK=https://www.paypal.com/your-payment-link-here
 ### 3.1 用户看到什么
 
 1. 未登录用户：Pro Banner 显示 "Sign Up Free" 和 "Sign In" 按钮
-2. 已登录但未升级用户：显示 **"Upgrade to Pro via PayPal — $9/mo"** 按钮
+2. 已登录但未升级用户：显示 **"Upgrade to Pro via PayPal — $X/mo"** 按钮（金额由 `NEXT_PUBLIC_PRO_PRICE` + `NEXT_PUBLIC_PRO_PRICE_LABEL` 控制，默认 $9/month）
 3. 已升级 Pro 用户：显示 "Pro Plan Active" 横幅
 
 ### 3.2 用户付款流程
