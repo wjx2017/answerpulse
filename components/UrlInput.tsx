@@ -196,7 +196,7 @@ export default function UrlInput() {
         <a href="/privacy" className="underline hover:text-gray-600">
           Privacy Policy
         </a>
-        . Free: 3 scans/day.
+        . 3 scans/day for free users.
       </p>
     </form>
   );

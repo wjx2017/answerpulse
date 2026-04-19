@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "AnswerPulse — Free AEO (Answer Engine Optimization) Scanner",
+  title: "AnswerPulse — AEO Scanner",
   description:
-    "Check your page's AEO score instantly. Analyze structured data, Q&A format, readability, and 8 key dimensions for answer engine visibility. Free, fast, no signup.",
+    "Check your page's AEO score instantly. Analyze structured data, Q&A format, readability, and 8 key dimensions for answer engine visibility. Fast, no signup required.",
   keywords: [
     "AEO",
     "Answer Engine Optimization",
@@ -15,14 +15,14 @@ export const metadata: Metadata = {
     "AI search optimization",
   ],
   openGraph: {
-    title: "AnswerPulse — Free AEO Scanner",
+    title: "AnswerPulse — AEO Scanner",
     description: "Analyze your page's AEO score across 8 dimensions in seconds.",
     type: "website",
     url: "https://answerpulse.com",
   },
   twitter: {
     card: "summary_large_image",
-    title: "AnswerPulse — Free AEO Scanner",
+    title: "AnswerPulse — AEO Scanner",
     description: "Analyze your page's AEO score across 8 dimensions in seconds.",
   },
   robots: "index, follow",

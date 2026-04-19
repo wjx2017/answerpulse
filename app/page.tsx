@@ -11,7 +11,7 @@ export default function Home() {
         <div className="text-center mb-10 max-w-3xl mx-auto">
           <div className="inline-flex items-center gap-2 bg-pulse-100 text-pulse-700 rounded-full px-4 py-1.5 text-sm font-medium mb-6">
             <span className="w-2 h-2 bg-pulse-600 rounded-full animate-pulse" />
-            Free AEO Scanner
+            AEO Scanner
           </div>
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 mb-5 leading-tight">
             Is Your Page Ready for{" "}
@@ -19,7 +19,7 @@ export default function Home() {
           </h1>
           <p className="text-lg sm:text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">
             Scan any URL and get an instant AEO (Answer Engine Optimization) score across 8 key dimensions. 
-            Free, fast, no signup required.
+            Fast, no signup required.
           </p>
         </div>
 
