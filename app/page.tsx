@@ -1,6 +1,7 @@
 import Header from "@/components/Header";
 import UrlInput from "@/components/UrlInput";
 import ScanAreaCta from "@/components/ScanAreaCta";
+import HomeProStatus from "@/components/HomeProStatus";
 import Link from "next/link";
 
 export default function Home() {
@@ -25,6 +26,9 @@ export default function Home() {
         </div>
 
         <UrlInput />
+
+        {/* Plan-aware Pro status / upgrade nudge */}
+        <HomeProStatus />
 
         {/* Pricing CTA — plan-aware */}
         <ScanAreaCta />
