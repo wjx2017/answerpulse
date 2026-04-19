@@ -2,7 +2,6 @@
 
 import { useAuth } from "@/lib/use-auth";
 import { isProActive } from "@/lib/config";
-import ProBanner from "@/components/ProBanner";
 import Link from "next/link";
 
 /**

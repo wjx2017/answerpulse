@@ -1,10 +1,17 @@
+"use client";
+
 import Header from "@/components/Header";
-import UpgradeButton from "@/components/UpgradeButton";
 import PayPalButton from "@/components/PayPalButton";
+import ExpiryReminder from "@/components/ExpiryReminder";
 import Link from "next/link";
-import { PRO_PRICE, PRO_PRICE_LABEL } from "@/lib/config";
+import { PRO_PRICE, isProActive, getProExpiryStatus } from "@/lib/config";
+import { useAuth } from "@/lib/use-auth";
 
 export default function PricingPage() {
+  const { user, profile, loading } = useAuth();
+  const proActive = isProActive(profile);
+  const expiryStatus = getProExpiryStatus(profile);
+
   return (
     <div className="min-h-screen">
       <Header />
@@ -14,6 +21,20 @@ export default function PricingPage() {
           <p className="text-lg text-gray-500 max-w-2xl mx-auto">
             Start free with 5 scans per month. Get Pro for unlimited power — one-time payment, 30 days access.
           </p>
+          {/* Expiry reminder for Pro users */}
+          <ExpiryReminder />
+          {proActive && (
+            <div className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-amber-50 border border-amber-200 rounded-full text-sm text-amber-700 font-medium">
+              <span>⭐</span>
+              You are on <span className="font-bold">Pro</span> — unlimited scans & full history
+            </div>
+          )}
+          {expiryStatus === "expired" && (
+            <div className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-red-50 border border-red-200 rounded-full text-sm text-red-700 font-medium">
+              <span>⛔</span>
+              Your Pro has <span className="font-bold">expired</span> — renew below to regain unlimited access
+            </div>
+          )}
         </div>
 
         <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
@@ -47,42 +68,88 @@ export default function PricingPage() {
           </div>
 
           {/* Pro Plan */}
-          <div className="bg-white rounded-2xl border-2 border-pulse-600 p-8 shadow-lg relative">
-            <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 bg-pulse-600 text-white text-xs font-bold rounded-full uppercase tracking-wide">
-              Most Popular
-            </div>
-            <div className="text-sm font-semibold text-pulse-600 uppercase tracking-wide mb-2">Pro</div>
+          <div className={`bg-white rounded-2xl p-8 shadow-lg relative ${proActive ? "border-2 border-amber-400" : "border-2 border-pulse-600"}`}>
+            {proActive ? (
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 bg-amber-500 text-white text-xs font-bold rounded-full uppercase tracking-wide">
+                Current Plan
+              </div>
+            ) : (
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 bg-pulse-600 text-white text-xs font-bold rounded-full uppercase tracking-wide">
+                Most Popular
+              </div>
+            )}
+            <div className={`text-sm font-semibold uppercase tracking-wide mb-2 ${proActive ? "text-amber-600" : "text-pulse-600"}`}>Pro</div>
             <div className="flex items-baseline gap-1 mb-1">
               <span className="text-4xl font-bold text-gray-900">${PRO_PRICE}</span>
             </div>
             <p className="text-gray-400 text-sm mb-6">one-time payment • 30 days access</p>
-            <ul className="space-y-3 text-left mb-8">
-              {[
-                "Unlimited scans",
-                "Full 8-dimension AEO analysis",
-                "Full scan history (up to 100)",
-                "Multi-engine detection",
-                "Batch scanning",
-                "Engine simulation preview",
-                "Priority support",
-                "No auto-renewal",
-              ].map((f) => (
-                <li key={f} className="flex items-start gap-2 text-sm text-gray-600">
-                  <svg className="w-5 h-5 text-green-500 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                  </svg>
-                  {f}
-                </li>
-              ))}
-            </ul>
-            <PayPalButton className="mb-3" />
-            {/* Fallback: direct PayPal link (no auto-upgrade) */}
-            <div className="text-center">
-              <UpgradeButton className="text-sm" />
-            </div>
-            <p className="text-xs text-gray-400 mt-3 text-center">
-              One-time payment · No auto-renewal · Renew manually after 30 days
-            </p>
+
+            {/* Pro user: show expiry info + Renew button */}
+            {proActive ? (
+              <>
+                <ul className="space-y-3 text-left mb-8">
+                  {[
+                    "Unlimited scans",
+                    "Full 8-dimension AEO analysis",
+                    "Full scan history (up to 100)",
+                    "Multi-engine detection",
+                    "Batch scanning",
+                    "Engine simulation preview",
+                    "Priority support",
+                    "No auto-renewal",
+                  ].map((f) => (
+                    <li key={f} className="flex items-start gap-2 text-sm text-gray-600">
+                      <svg className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                      </svg>
+                      {f}
+                    </li>
+                  ))}
+                </ul>
+                {profile?.pro_expires_at && (
+                  <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800">
+                    <span className="font-semibold">Pro active until </span>
+                    {new Date(profile.pro_expires_at).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" })}
+                    {(() => {
+                      const daysLeft = Math.max(0, Math.ceil((new Date(profile.pro_expires_at!).getTime() - Date.now()) / (24 * 60 * 60 * 1000)));
+                      return daysLeft > 0 ? <span className="ml-1">({daysLeft} days remaining)</span> : null;
+                    })()}
+                  </div>
+                )}
+                <Link
+                  href="/"
+                  className="block w-full py-3 text-center font-semibold rounded-xl bg-amber-500 hover:bg-amber-600 text-white transition-colors"
+                >
+                  Start Scanning →
+                </Link>
+              </>
+            ) : (
+              <>
+                <ul className="space-y-3 text-left mb-8">
+                  {[
+                    "Unlimited scans",
+                    "Full 8-dimension AEO analysis",
+                    "Full scan history (up to 100)",
+                    "Multi-engine detection",
+                    "Batch scanning",
+                    "Engine simulation preview",
+                    "Priority support",
+                    "No auto-renewal",
+                  ].map((f) => (
+                    <li key={f} className="flex items-start gap-2 text-sm text-gray-600">
+                      <svg className="w-5 h-5 text-green-500 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                      </svg>
+                      {f}
+                    </li>
+                  ))}
+                </ul>
+                <PayPalButton />
+                <p className="text-xs text-gray-400 mt-3 text-center">
+                  $9 one-time payment · 30 days Pro · No auto-renewal · Pro activated automatically after payment
+                </p>
+              </>
+            )}
           </div>
         </div>
 
@@ -109,7 +176,7 @@ export default function PricingPage() {
               },
               {
                 q: "How does PayPal payment work?",
-                a: "Click the PayPal button below the Pro plan to check out securely. After payment is confirmed, your Pro plan is activated instantly — no waiting, no manual steps.",
+                a: "Click the PayPal Checkout button on the Pro plan to pay securely. After payment is confirmed, your Pro plan is activated instantly — no waiting, no manual steps.",
               },
               {
                 q: "What happens after I pay?",

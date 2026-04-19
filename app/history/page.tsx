@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useAuth } from "@/lib/use-auth";
 import { isProActive } from "@/lib/config";
+import ExpiryReminder from "@/components/ExpiryReminder";
 import Link from "next/link";
 import Header from "@/components/Header";
 
@@ -87,6 +88,9 @@ export default function HistoryPage() {
     <div className="min-h-screen bg-gray-50">
       <Header />
       <div className="pt-24 px-4 max-w-4xl mx-auto">
+        {/* Expiry reminder — shown for Pro users expiring soon or expired */}
+        <ExpiryReminder />
+
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Scan History</h1>

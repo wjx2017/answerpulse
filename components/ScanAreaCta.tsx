@@ -6,7 +6,7 @@ import { isProActive } from "@/lib/config";
 
 /**
  * Plan-aware CTA shown below the scan area on the homepage.
- * - Pro users: no upsell, just a subtle status hint
+ * - Pro users: hidden (HomeProStatus already shows Pro status)
  * - Free / not logged in: show upgrade CTA
  */
 export default function ScanAreaCta() {
@@ -15,15 +15,7 @@ export default function ScanAreaCta() {
 
   if (loading) return null;
 
-  if (isPro) {
-    return (
-      <div className="mt-6">
-        <span className="inline-flex items-center gap-2 text-sm text-amber-600 font-medium">
-          ✨ Pro: Unlimited scans active
-        </span>
-      </div>
-    );
-  }
+  if (isPro) return null; // HomeProStatus already shows Pro status on homepage
 
   return (
     <div className="mt-6">

@@ -29,3 +29,44 @@ export function isProActive(profile: { plan?: string; pro_expires_at?: string | 
   const expiresAt = new Date(profile.pro_expires_at);
   return Date.now() < expiresAt.getTime();
 }
+
+/** Pro expiry status used for in-app reminders */
+export type ProExpiryStatus =
+  | "none"         // free user or no pro_expires_at
+  | "active"       // pro active, more than 3 days remaining
+  | "expiringSoon" // pro active, ≤ 3 days remaining
+  | "expired";     // pro plan but expiry date has passed
+
+/** How many days before expiry to start showing the reminder */
+export const PRO_REMINDER_DAYS_BEFORE = 3;
+
+/**
+ * Classify a user's Pro expiry status.
+ * - "none": free user, or pro without expiry date set
+ * - "active": pro active, > 3 days remaining
+ * - "expiringSoon": pro active, ≤ 3 days remaining
+ * - "expired": pro plan but expiry date has passed
+ */
+export function getProExpiryStatus(profile: { plan?: string; pro_expires_at?: string | null } | null | undefined): ProExpiryStatus {
+  if (!profile || profile.plan !== "pro") return "none";
+  if (!profile.pro_expires_at) return "active"; // backward compat
+  const expiresAt = new Date(profile.pro_expires_at);
+  const now = Date.now();
+  const expiryTime = expiresAt.getTime();
+  if (now >= expiryTime) return "expired";
+  const daysLeft = Math.ceil((expiryTime - now) / (24 * 60 * 60 * 1000));
+  if (daysLeft <= PRO_REMINDER_DAYS_BEFORE) return "expiringSoon";
+  return "active";
+}
+
+/**
+ * Get the number of days remaining until Pro expiry.
+ * Returns null if not applicable (free user / no expiry date).
+ */
+export function getProDaysRemaining(profile: { plan?: string; pro_expires_at?: string | null } | null | undefined): number | null {
+  if (!profile || profile.plan !== "pro" || !profile.pro_expires_at) return null;
+  const expiresAt = new Date(profile.pro_expires_at);
+  const now = Date.now();
+  const daysLeft = Math.ceil((expiresAt.getTime() - now) / (24 * 60 * 60 * 1000));
+  return daysLeft;
+}

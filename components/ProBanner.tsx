@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useAuth } from "@/lib/use-auth";
-import UpgradeButton from "@/components/UpgradeButton";
 import { PRO_PRICE_DISPLAY, isProActive } from "@/lib/config";
 
 export default function ProBanner() {
@@ -65,7 +64,12 @@ export default function ProBanner() {
         </div>
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
           {user ? (
-            <UpgradeButton />
+            <Link
+              href="/pricing"
+              className="px-8 py-3 bg-white text-pulse-700 font-semibold rounded-xl hover:bg-gray-100 transition-colors shadow-lg"
+            >
+              Upgrade to Pro — ${PRO_PRICE_DISPLAY}
+            </Link>
           ) : (
             <>
               <Link

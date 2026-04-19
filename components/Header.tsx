@@ -3,21 +3,9 @@
 import Link from "next/link";
 import { useAuth } from "@/lib/use-auth";
 import { isProActive } from "@/lib/config";
-import UpgradeButton from "@/components/UpgradeButton";
-
-function formatExpiry(dateStr: string): { dateLabel: string; daysLeft: number } {
-  const d = new Date(dateStr);
-  const daysLeft = Math.max(0, Math.ceil((d.getTime() - Date.now()) / (24 * 60 * 60 * 1000)));
-  const dateLabel = d.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
-  return { dateLabel, daysLeft };
-}
-
 export default function Header() {
   const { user, profile, loading, signOut } = useAuth();
   const proActive = isProActive(profile);
-
-  // Derive expiry info once
-  const expiry = profile?.pro_expires_at ? formatExpiry(profile.pro_expires_at) : null;
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100">
@@ -53,15 +41,8 @@ export default function Header() {
                   {profile?.full_name || user?.email || "User"}
                 </span>
                 {proActive ? (
-                  <span className="inline-flex flex-col items-start leading-tight">
-                    <span className="px-2 py-0.5 bg-amber-100 text-amber-700 rounded-full text-xs font-semibold">
-                      PRO
-                    </span>
-                    {expiry && (
-                      <span className="text-[10px] text-amber-600 font-medium whitespace-nowrap">
-                        until {expiry.dateLabel} · {expiry.daysLeft}d left
-                      </span>
-                    )}
+                  <span className="px-2 py-0.5 bg-amber-100 text-amber-700 rounded-full text-xs font-semibold">
+                    PRO
                   </span>
                 ) : (
                   <span className="text-xs text-gray-400">

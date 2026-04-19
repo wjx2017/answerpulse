@@ -6,6 +6,7 @@ import Link from "next/link";
 import ScoreGauge from "@/components/ScoreGauge";
 import BreakdownList from "@/components/BreakdownList";
 import ProBanner from "@/components/ProBanner";
+import ExpiryReminder from "@/components/ExpiryReminder";
 import Header from "@/components/Header";
 import { AeoReport } from "@/lib/aeo-analyzer";
 import { exportCsv, exportPdf } from "@/lib/export-utils";
@@ -172,6 +173,9 @@ function ReportContent() {
           <h2 className="text-xl font-bold text-gray-900 mb-5">8-Dimension Breakdown</h2>
           <BreakdownList dimensions={report.dimensions} />
         </div>
+
+        {/* Expiry reminder — shown for Pro users expiring soon or expired */}
+        <div data-role="expiry-reminder"><ExpiryReminder /></div>
 
         {/* Pro Banner */}
         <div data-role="pro-banner"><ProBanner /></div>
