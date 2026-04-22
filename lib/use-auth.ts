@@ -63,7 +63,32 @@ export function useAuth() {
         .eq("id", userId)
         .single();
       if (data && !error) {
-        setProfile(data as UserProfile);
+        // ── Proactive Pro expiry check ──
+        // If Pro has expired, downgrade plan to 'free' immediately.
+        // This ensures the UI reflects expired status even if the user
+        // hasn't triggered a scan (which is the only place the downgrade
+        // happened before — see /api/analyze).
+        let profile = data as UserProfile;
+        if (profile.plan === "pro" && profile.pro_expires_at) {
+          const expiresAt = new Date(profile.pro_expires_at);
+          if (Date.now() >= expiresAt.getTime()) {
+            const now = new Date();
+            const nextReset = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+            const { error: updateErr } = await supabase
+              .from("profiles")
+              .update({
+                plan: "free",
+                scans_used: 0,
+                scans_reset_at: nextReset.toISOString(),
+              })
+              .eq("id", userId);
+            if (!updateErr) {
+              console.log(`[useAuth] Pro expired for user ${userId}, downgraded to free`);
+              profile = { ...profile, plan: "free", scans_used: 0, scans_reset_at: nextReset.toISOString() };
+            }
+          }
+        }
+        setProfile(profile);
       }
     } catch (e) {
       console.error("Failed to fetch profile:", e);
