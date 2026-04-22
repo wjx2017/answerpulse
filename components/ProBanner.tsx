@@ -2,12 +2,14 @@
 
 import Link from "next/link";
 import { useAuth } from "@/lib/use-auth";
-import { PRO_PRICE_DISPLAY, isProActive } from "@/lib/config";
+import { PRO_PRICE_DISPLAY, isProActive, getProExpiryStatus, PRO_DURATION_DAYS } from "@/lib/config";
 
 export default function ProBanner() {
   const { user, profile } = useAuth();
+  const expiryStatus = getProExpiryStatus(profile);
 
-  if (isProActive(profile)) {
+  // ── Pro active (not expired, not expiring soon) ──
+  if (expiryStatus === "active") {
     const expiryDate = profile?.pro_expires_at ? new Date(profile.pro_expires_at) : null;
     const daysLeft = expiryDate ? Math.max(0, Math.ceil((expiryDate.getTime() - Date.now()) / (24 * 60 * 60 * 1000))) : null;
 
@@ -32,6 +34,7 @@ export default function ProBanner() {
     );
   }
 
+  // ── Expired or free (or expiring soon) — show Free tier purple banner ──
   return (
     <div className="bg-gradient-to-r from-pulse-600 to-pulse-700 rounded-2xl p-8 text-white shadow-xl">
       <div className="max-w-3xl mx-auto text-center">
@@ -39,11 +42,15 @@ export default function ProBanner() {
           <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
             <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
           </svg>
-          Pro
+          {expiryStatus === "expired" ? "Pro Expired" : "Free"}
         </div>
-        <h3 className="text-2xl font-bold mb-3">Unlock Full AEO Analysis</h3>
+        <h3 className="text-2xl font-bold mb-3">
+          {expiryStatus === "expired" ? "Renew Pro for Full AEO Analysis" : "Unlock Full AEO Analysis"}
+        </h3>
         <p className="text-pulse-100 mb-6 max-w-xl mx-auto">
-          Get unlimited scans, full history, multi-engine detection, batch scanning, and detailed improvement roadmaps.
+          {expiryStatus === "expired"
+            ? "Your Pro access has expired. Renew now to regain unlimited scans, full history, and all Pro features."
+            : "Get unlimited scans, full history, multi-engine detection, batch scanning, and detailed improvement roadmaps."}
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-left max-w-lg mx-auto mb-6">
           {[
@@ -68,7 +75,7 @@ export default function ProBanner() {
               href="/pricing"
               className="px-8 py-3 bg-white text-pulse-700 font-semibold rounded-xl hover:bg-gray-100 transition-colors shadow-lg"
             >
-              Upgrade to Pro — ${PRO_PRICE_DISPLAY}
+              {expiryStatus === "expired" ? `Renew Pro — ${PRO_PRICE_DISPLAY}` : `Upgrade to Pro — ${PRO_PRICE_DISPLAY}`}
             </Link>
           ) : (
             <>
@@ -87,7 +94,7 @@ export default function ProBanner() {
             </>
           )}
         </div>
-        <p className="text-pulse-200 text-sm mt-4">{PRO_PRICE_DISPLAY} one-time · 30 days access · No auto-renewal</p>
+        <p className="text-pulse-200 text-sm mt-4">{PRO_PRICE_DISPLAY} one-time · {PRO_DURATION_DAYS} days access · No auto-renewal</p>
       </div>
     </div>
   );

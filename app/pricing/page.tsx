@@ -4,13 +4,15 @@ import Header from "@/components/Header";
 import PayPalButton from "@/components/PayPalButton";
 import ExpiryReminder from "@/components/ExpiryReminder";
 import Link from "next/link";
-import { PRO_PRICE, isProActive, getProExpiryStatus } from "@/lib/config";
+import { PRO_PRICE, PRO_PRICE_DISPLAY, isProActive, getProExpiryStatus, PRO_DURATION_DAYS } from "@/lib/config";
 import { useAuth } from "@/lib/use-auth";
 
 export default function PricingPage() {
   const { user, profile, loading } = useAuth();
   const proActive = isProActive(profile);
   const expiryStatus = getProExpiryStatus(profile);
+  // Treat expired/expiringSoon as not active for pricing display
+  const showAsActive = expiryStatus === "active";
 
   return (
     <div className="min-h-screen">
@@ -23,7 +25,7 @@ export default function PricingPage() {
           </p>
           {/* Expiry reminder for Pro users */}
           <ExpiryReminder />
-          {proActive && (
+          {showAsActive && (
             <div className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-amber-50 border border-amber-200 rounded-full text-sm text-amber-700 font-medium">
               <span>⭐</span>
               You are on <span className="font-bold">Pro</span> — unlimited scans & full history
@@ -68,24 +70,28 @@ export default function PricingPage() {
           </div>
 
           {/* Pro Plan */}
-          <div className={`bg-white rounded-2xl p-8 shadow-lg relative ${proActive ? "border-2 border-amber-400" : "border-2 border-pulse-600"}`}>
-            {proActive ? (
+          <div className={`bg-white rounded-2xl p-8 shadow-lg relative ${showAsActive ? "border-2 border-amber-400" : "border-2 border-pulse-600"}`}>
+            {showAsActive ? (
               <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 bg-amber-500 text-white text-xs font-bold rounded-full uppercase tracking-wide">
                 Current Plan
+              </div>
+            ) : expiryStatus === "expired" ? (
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 bg-red-500 text-white text-xs font-bold rounded-full uppercase tracking-wide">
+                Renew Now
               </div>
             ) : (
               <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 bg-pulse-600 text-white text-xs font-bold rounded-full uppercase tracking-wide">
                 Most Popular
               </div>
             )}
-            <div className={`text-sm font-semibold uppercase tracking-wide mb-2 ${proActive ? "text-amber-600" : "text-pulse-600"}`}>Pro</div>
+            <div className={`text-sm font-semibold uppercase tracking-wide mb-2 ${showAsActive ? "text-amber-600" : expiryStatus === "expired" ? "text-red-600" : "text-pulse-600"}`}>Pro</div>
             <div className="flex items-baseline gap-1 mb-1">
               <span className="text-4xl font-bold text-gray-900">${PRO_PRICE}</span>
             </div>
             <p className="text-gray-400 text-sm mb-6">one-time payment • 30 days access</p>
 
-            {/* Pro user: show expiry info + Renew button */}
-            {proActive ? (
+            {/* Pro active: show expiry info + Start Scanning */}
+            {showAsActive ? (
               <>
                 <ul className="space-y-3 text-left mb-8">
                   {[
@@ -144,9 +150,19 @@ export default function PricingPage() {
                     </li>
                   ))}
                 </ul>
+                {expiryStatus === "expired" && (
+                  <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-800">
+                    <span className="font-semibold">⛔ Pro expired</span>
+                    {profile?.pro_expires_at && (
+                      <> — expired on {new Date(profile.pro_expires_at).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" })}</>
+                    )}
+                    <br />
+                    <span>Renew below to regain unlimited access.</span>
+                  </div>
+                )}
                 <PayPalButton />
                 <p className="text-xs text-gray-400 mt-3 text-center">
-                  $9 one-time payment · 30 days Pro · No auto-renewal · Pro activated automatically after payment
+                  ${PRO_PRICE} one-time payment · {PRO_DURATION_DAYS} days Pro · No auto-renewal · Pro activated automatically after payment
                 </p>
               </>
             )}

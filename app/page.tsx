@@ -2,7 +2,6 @@ import Header from "@/components/Header";
 import UrlInput from "@/components/UrlInput";
 import ScanAreaCta from "@/components/ScanAreaCta";
 import HomeProStatus from "@/components/HomeProStatus";
-import ExpiryReminder from "@/components/ExpiryReminder";
 import Link from "next/link";
 
 export default function Home() {
@@ -28,10 +27,7 @@ export default function Home() {
 
         <UrlInput />
 
-        {/* Expiry reminder — shown for Pro users expiring soon or expired */}
-        <ExpiryReminder />
-
-        {/* Plan-aware Pro status / upgrade nudge */}
+        {/* Plan-aware Pro status / upgrade nudge — handles active, expiring, expired, free states */}
         <HomeProStatus />
 
         {/* Pricing CTA — plan-aware */}

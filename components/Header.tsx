@@ -2,10 +2,13 @@
 
 import Link from "next/link";
 import { useAuth } from "@/lib/use-auth";
-import { isProActive } from "@/lib/config";
+import { isProActive, getProExpiryStatus } from "@/lib/config";
+
 export default function Header() {
   const { user, profile, loading, signOut } = useAuth();
   const proActive = isProActive(profile);
+  const expiryStatus = getProExpiryStatus(profile);
+  const isExpired = expiryStatus === "expired";
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100">
@@ -40,13 +43,14 @@ export default function Header() {
                 <span className="text-sm text-gray-500 truncate max-w-[160px]" title={profile?.full_name || user?.email || ""}>
                   {profile?.full_name || user?.email || "User"}
                 </span>
-                {proActive ? (
+                {/* Hide PRO badge when expired; show scan count for free/expired users */}
+                {proActive && !isExpired ? (
                   <span className="px-2 py-0.5 bg-amber-100 text-amber-700 rounded-full text-xs font-semibold">
                     PRO
                   </span>
                 ) : (
                   <span className="text-xs text-gray-400">
-                    {profile?.scans_used ?? 0}/5 scans
+                    {profile?.scans_used ?? 0}/5 this month
                   </span>
                 )}
                 <button
