@@ -12,37 +12,55 @@ export default function AuthCallbackPage() {
     const supabase = createClient();
 
     const handleCallback = async () => {
-      const hash = window.location.hash;
-      if (!hash) {
-        // No hash fragment — nothing to process, redirect to home
-        router.replace("/");
-        return;
-      }
-
-      // Parse hash fragment (e.g. #access_token=xxx&token_type=bearer&expires_in=3600&refresh_token=yyy&type=signup)
-      const params = new URLSearchParams(hash.slice(1));
-      const accessToken = params.get("access_token");
-      const refreshToken = params.get("refresh_token");
-
-      if (accessToken && refreshToken) {
+      // Priority 1: Check for ?code= query param (Supabase PKCE flow — email verification, OAuth)
+      const urlParams = new URLSearchParams(window.location.search);
+      const code = urlParams.get("code");
+      if (code) {
         try {
-          const { error } = await supabase.auth.setSession({
-            access_token: accessToken,
-            refresh_token: refreshToken,
-          });
+          const { error } = await supabase.auth.exchangeCodeForSession(code);
           if (error) throw error;
-          // Session established successfully — redirect to home
           router.replace("/");
+          return;
         } catch (err: unknown) {
-          const message = err instanceof Error ? err.message : "Failed to establish session";
+          const message =
+            err instanceof Error ? err.message : "Failed to establish session";
           setError(message);
-          // Still redirect to home after a short delay so user sees the error
           setTimeout(() => router.replace("/"), 3000);
+          return;
         }
-      } else {
-        // No token in hash — just redirect to home
-        router.replace("/");
       }
+
+      // Priority 2: Check for hash fragment (legacy Supabase flow)
+      // e.g. #access_token=xxx&token_type=bearer&expires_in=3600&refresh_token=yyy&type=signup
+      const hash = window.location.hash;
+      if (hash) {
+        const params = new URLSearchParams(hash.slice(1));
+        const accessToken = params.get("access_token");
+        const refreshToken = params.get("refresh_token");
+
+        if (accessToken && refreshToken) {
+          try {
+            const { error } = await supabase.auth.setSession({
+              access_token: accessToken,
+              refresh_token: refreshToken,
+            });
+            if (error) throw error;
+            router.replace("/");
+            return;
+          } catch (err: unknown) {
+            const message =
+              err instanceof Error
+                ? err.message
+                : "Failed to establish session";
+            setError(message);
+            setTimeout(() => router.replace("/"), 3000);
+            return;
+          }
+        }
+      }
+
+      // No auth data found — nothing to process, redirect to home
+      router.replace("/");
     };
 
     handleCallback();
@@ -52,9 +70,16 @@ export default function AuthCallbackPage() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
         <div className="bg-white rounded-2xl border border-red-200 p-8 shadow-sm max-w-md text-center">
-          <h1 className="text-xl font-bold text-red-600 mb-2">Verification Error</h1>
+          <h1 className="text-xl font-bold text-red-600 mb-2">
+            Verification Error
+          </h1>
           <p className="text-gray-600 mb-4 text-sm">{error}</p>
-          <p className="text-gray-400 text-sm">Redirecting to home...</p>
+          <a
+            href="/login"
+            className="inline-block px-6 py-2 bg-pulse-600 text-white rounded-lg hover:bg-pulse-700 transition-colors text-sm font-medium"
+          >
+            Back to Sign In
+          </a>
         </div>
       </div>
     );
