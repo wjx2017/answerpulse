@@ -1,0 +1,24 @@
+name = "answerpulse"
+compatibility_date = "2025-04-01"
+compatibility_flags = ["nodejs_compat"]
+main = ".open-next/worker.js"
+
+[placement]
+mode = "smart"
+
+[observability]
+enabled = true
+
+[vars]
+NEXT_PUBLIC_SUPABASE_URL = "https://pxydwoxztgghbwqyqgxk.supabase.co"
+NEXT_PUBLIC_SUPABASE_ANON_KEY = "sb_publishable_jf8bxalaQmXYtxPWOSjpCg_vlxtYxWT"
+SUPABASE_SERVICE_ROLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB4eWR3b3h6dGdnaGJ3cXlxZ3hrIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NjQyMzY0MiwiZXhwIjoyMDkxOTk5NjQyfQ.te_XnKyWZ_FvLJP-mjhsrlq488vaM80sP87v0wAQEYg"
+NEXT_PUBLIC_PAYPAL_CLIENT_ID = "your_sandbox_client_id_here"
+NEXT_PUBLIC_PAYPAL_API_URL = "https://api-m.sandbox.paypal.com"
+NEXT_PUBLIC_PAYPAL_PAYMENT_LINK = "https://www.paypal.com/ncp/payment/QDHG6SJY5MQAJ"
+NEXT_PUBLIC_APP_URL = "https://answerpulse.answerpulse-cf.workers.dev"
+
+[assets]
+directory = ".open-next/assets"
+binding = "ASSETS"
+not_found_handling = "404-page"
