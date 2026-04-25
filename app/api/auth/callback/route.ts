@@ -45,5 +45,6 @@ export async function GET(request: Request) {
   }
 }
 
-// Edge runtime for Cloudflare Workers compatibility
-export const runtime = 'edge';
+// Note: OpenNext handles the Cloudflare Workers conversion
+// Don't use edge runtime — OpenNext requires standard runtime
+// export const runtime = 'edge';
