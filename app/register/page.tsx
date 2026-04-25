@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import PasswordInput from "@/components/PasswordInput";
+import { GoogleSignInButton } from "@/components/auth/GoogleSignInButton";
 
 export default function RegisterPage() {
   const [email, setEmail] = useState("");
@@ -92,6 +93,20 @@ export default function RegisterPage() {
             </div>
           )}
 
+          {/* Google OAuth */}
+          <GoogleSignInButton mode="register" />
+
+          {/* Divider */}
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-gray-200" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-white px-3 text-gray-400">Or sign up with email</span>
+            </div>
+          </div>
+
+          {/* Email/Password */}
           <form onSubmit={handleRegister} className="space-y-4">
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
