@@ -18,7 +18,16 @@ export function useAuth() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const supabase = createClient();
+    let supabase: ReturnType<typeof createClient>;
+    try {
+      supabase = createClient();
+    } catch (e) {
+      // If Supabase client fails to initialize (e.g., missing env vars),
+      // gracefully set loading to false and skip auth
+      console.error("[useAuth] Failed to create Supabase client:", e);
+      setLoading(false);
+      return;
+    }
 
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {

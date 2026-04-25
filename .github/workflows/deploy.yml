@@ -25,9 +25,18 @@ jobs:
       - name: Build with OpenNext for Cloudflare
         run: npm run build:cf
         env:
+          # ── Supabase (must be at build time for NEXT_PUBLIC_* client inlining) ──
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          # ── PayPal (NEXT_PUBLIC_* also need build-time availability) ──
+          NEXT_PUBLIC_PAYPAL_CLIENT_ID: ${{ secrets.NEXT_PUBLIC_PAYPAL_CLIENT_ID }}
+          NEXT_PUBLIC_PAYPAL_API_URL: ${{ secrets.NEXT_PUBLIC_PAYPAL_API_URL }}
+          NEXT_PUBLIC_PAYPAL_PAYMENT_LINK: ${{ secrets.NEXT_PUBLIC_PAYPAL_PAYMENT_LINK }}
+          # ── App ──
+          NEXT_PUBLIC_APP_URL: ${{ secrets.NEXT_PUBLIC_APP_URL }}
+          NEXT_PUBLIC_PRO_PRICE: ${{ secrets.NEXT_PUBLIC_PRO_PRICE }}
+          NEXT_PUBLIC_PRO_PRICE_DISPLAY: ${{ secrets.NEXT_PUBLIC_PRO_PRICE_DISPLAY }}
 
       - name: Deploy to Cloudflare Workers
         run: npx wrangler deploy
