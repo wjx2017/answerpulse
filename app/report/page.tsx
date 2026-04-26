@@ -198,6 +198,7 @@ function ReportContent() {
       <footer className="py-6 px-4 border-t border-gray-200 bg-white">
         <div className="max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-gray-400">
           <span>AnswerPulse © {new Date().getFullYear()}</span>
+          <Link href="/terms" className="hover:text-gray-600">Terms of Service</Link>
           <Link href="/privacy" className="hover:text-gray-600">Privacy Policy</Link>
         </div>
       </footer>

@@ -14,6 +14,7 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [termsAgreed, setTermsAgreed] = useState(false);
   const router = useRouter();
 
   const handleRegister = async (e: React.FormEvent) => {
@@ -148,9 +149,31 @@ export default function RegisterPage() {
                 placeholder="At least 6 characters"
               />
             </div>
+
+            {/* Terms agreement checkbox */}
+            <div className="flex items-start gap-2">
+              <input
+                id="terms"
+                type="checkbox"
+                checked={termsAgreed}
+                onChange={(e) => setTermsAgreed(e.target.checked)}
+                className="mt-1 h-4 w-4 rounded border-gray-300 text-pulse-600 focus:ring-pulse-500"
+              />
+              <label htmlFor="terms" className="text-sm text-gray-600">
+                I agree to the{" "}
+                <Link href="/terms" className="text-pulse-600 hover:text-pulse-700 hover:underline" target="_blank">
+                  Terms of Service
+                </Link>{" "}
+                and{" "}
+                <Link href="/privacy" className="text-pulse-600 hover:text-pulse-700 hover:underline" target="_blank">
+                  Privacy Policy
+                </Link>
+              </label>
+            </div>
+
             <button
               type="submit"
-              disabled={loading || !email || !password}
+              disabled={loading || !email || !password || !termsAgreed}
               className="w-full py-2.5 bg-pulse-600 hover:bg-pulse-700 disabled:bg-gray-300 text-white font-semibold rounded-lg transition-colors"
             >
               {loading ? "Creating account..." : "Sign Up Free"}
