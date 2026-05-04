@@ -12,7 +12,8 @@ enabled = true
 [vars]
 NEXT_PUBLIC_SUPABASE_URL = "https://pxydwoxztgghbwqyqgxk.supabase.co"
 NEXT_PUBLIC_SUPABASE_ANON_KEY = "sb_publishable_jf8bxalaQmXYtxPWOSjpCg_vlxtYxWT"
-NEXT_PUBLIC_PAYPAL_CLIENT_ID = "AYfCuEMTppPDwjwY085IKG_KpADFEmywaPcwIA7hJcrsyD2QmxMjTTjDDaiHUQVoHMftDEsyfzAY8a8n"
+NEXT_PUBLIC_PAYPAL_CLIENT_ID = "AXscgDgQUgrvI-qKKomQ2kkJLs424dpqOQeIbZIq5ECIHMiaIx8nULJqCqs1PXfCitgDFwuKPclaTyur"
+NEXT_PUBLIC_PAYPAL_API_URL = "https://api-m.sandbox.paypal.com"
 NEXT_PUBLIC_PAYPAL_PAYMENT_LINK = "https://www.paypal.com/ncp/payment/QDHG6SJY5MQAJ"
 NEXT_PUBLIC_APP_URL = "https://answerpulse.starai-cf.workers.dev"
 
