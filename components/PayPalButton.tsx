@@ -167,7 +167,7 @@ export default function PayPalButton({ className = "" }: PayPalButtonProps) {
     }
 
     const script = document.createElement("script");
-    script.src = `https://www.paypal.com/sdk/js?client-id=${paypalClientId}&currency=USD&intent=capture`;
+    script.src = `https://www.paypal.com/sdk/js?client-id=${paypalClientId}&currency=USD&intent=capture&locale=en_US`;
     script.async = true;
     script.onload = () => {
       void renderButtons();
