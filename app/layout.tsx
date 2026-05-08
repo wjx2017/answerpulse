@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import "./globals.css";
+import { PageTracker } from "@/components/PageTracker";
 
 export const metadata: Metadata = {
   title: "AnswerPulse — AEO Scanner",
@@ -36,6 +38,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="min-h-screen bg-gray-50 text-gray-900 antialiased">
+        <Suspense fallback={null}>
+          <PageTracker />
+        </Suspense>
         {children}
       </body>
     </html>
